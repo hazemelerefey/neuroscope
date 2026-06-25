@@ -1,0 +1,39 @@
+# NeuroScope Language Files (i18n)
+
+layers:
+  Conv: "Convolutional layer — extracts spatial features using learnable filters"
+  Relu: "ReLU activation — outputs max(0, x), the most common activation function"
+  GELU: "GELU activation — smoother alternative to ReLU, used in transformers"
+  Sigmoid: "Sigmoid activation — maps to (0, 1), can cause vanishing gradients in deep networks"
+  Tanh: "Tanh activation — maps to (-1, 1), can cause vanishing gradients in deep networks"
+  Softmax: "Softmax — converts logits to probabilities for classification"
+  MatMul: "Matrix multiplication — core operation of fully connected layers"
+  Gemm: "General matrix multiplication with bias — used in dense layers"
+  BatchNormalization: "Batch normalization — stabilizes training by normalizing activations"
+  LayerNormalization: "Layer normalization — normalizes across features, common in transformers"
+  MaxPool: "Max pooling — reduces spatial dimensions by taking maximum values"
+  AveragePool: "Average pooling — reduces spatial dimensions by averaging values"
+  GlobalAveragePool: "Global average pool — averages each feature map to a single value"
+  Flatten: "Flatten — reshapes multi-dimensional tensor to 1D"
+  Dropout: "Dropout — randomly zeros neurons during training to prevent overfitting"
+  LSTM: "LSTM — Long Short-Term Memory, captures long-range dependencies in sequences"
+  GRU: "GRU — Gated Recurrent Unit, simplified alternative to LSTM"
+  Concat: "Concatenation — merges tensors along a dimension"
+  Add: "Addition — element-wise sum, used in residual connections"
+
+analysis:
+  CRITICAL: "Critical issue — will likely cause training failure or poor results"
+  WARNING: "Warning — may impact performance or training stability"
+  INFO: "Information — good to know, may improve your model"
+
+ui:
+  upload: "Upload Model"
+  analyze: "Analyze"
+  export: "Export"
+  compare: "Compare"
+  health_score: "Health Score"
+  total_params: "Total Parameters"
+  total_flops: "Total FLOPs"
+  memory: "Memory"
+  findings: "Findings"
+  layers: "Layers"

@@ -1,0 +1,92 @@
+# NeuroScope Layer Type → 3D Shape Mapping
+# Defines how each layer type is rendered in the 3D visualization
+
+shapes:
+  # Convolution layers → 3D Box (represents feature map volume)
+  convolution:
+    geometry: box
+    color: "#6366f1"  # Indigo
+    scale_by: output_channels  # Size proportional to channel count
+
+  # Linear/Dense layers → Flat Plane (2D weight matrix)
+  linear:
+    geometry: plane
+    color: "#8b5cf6"  # Purple
+    scale_by: output_features
+
+  # Pooling layers → Small Cube (reduced spatial dims)
+  pooling:
+    geometry: small_cube
+    color: "#06b6d4"  # Cyan
+    scale_by: output_spatial
+
+  # Activation layers → Glowing Sphere (element-wise uniform)
+  activation:
+    geometry: sphere
+    color: "#f59e0b"  # Amber
+    scale_by: none
+    glow: true
+
+  # Normalization layers → Thin Slab
+  normalization:
+    geometry: slab
+    color: "#10b981"  # Emerald
+    scale_by: channels
+
+  # Reshape layers (Flatten, etc.) → Cone (funnels data)
+  reshape:
+    geometry: cone
+    color: "#ec4899"  # Pink
+    scale_by: none
+
+  # Regularization (Dropout) → Wireframe cube
+  regularization:
+    geometry: wireframe
+    color: "#ef4444"  # Red
+    scale_by: none
+
+  # Recurrent layers → Cylinder (cyclical flow)
+  recurrent:
+    geometry: cylinder
+    color: "#14b8a6"  # Teal
+    scale_by: hidden_size
+
+  # Attention layers → Octahedron (multi-head pattern)
+  attention:
+    geometry: octahedron
+    color: "#f97316"  # Orange
+    scale_by: num_heads
+
+  # Combination (Add, Concat) → Merge shape
+  combination:
+    geometry: merge
+    color: "#84cc16"  # Lime
+    scale_by: none
+
+  # Default/Unknown
+  other:
+    geometry: cube
+    color: "#64748b"  # Slate
+    scale_by: none
+
+# Edge styles
+edges:
+  sequential:
+    color: "#94a3b8"  # Gray
+    style: solid
+    width: 1.0
+
+  skip:
+    color: "#f59e0b"  # Amber
+    style: dashed
+    width: 2.0
+
+  residual:
+    color: "#10b981"  # Emerald
+    style: dashed
+    width: 2.0
+
+  concat:
+    color: "#8b5cf6"  # Purple
+    style: dotted
+    width: 1.5

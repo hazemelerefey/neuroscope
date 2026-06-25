@@ -1,0 +1,26 @@
+# NeuroScope Backend
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+python-multipart==0.0.9
+pydantic==2.9.0
+
+# Model Parsing
+onnx==1.17.0
+onnxruntime==1.19.0
+protobuf==5.28.0
+
+# PyTorch (optional, for .pt files)
+# torch>=2.0.0
+# torchinfo>=1.8.0
+
+# Keras/TensorFlow (optional, for .h5 files)
+# tensorflow>=2.15.0
+
+# Export
+trimesh==4.4.0          # GLB/GLTF export
+reportlab==4.2.0        # PDF export
+pyyaml==6.0.2           # Config files
+
+# Utilities
+numpy==1.26.4
+rich==13.7.0            # CLI output
