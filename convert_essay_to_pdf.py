@@ -1,4 +1,4 @@
-"""Convert the NeuroScope essay to a professional PDF."""
+"""Convert the NeuroScope essay to a professional PDF with team info."""
 
 from fpdf import FPDF
 import re
@@ -7,15 +7,15 @@ import re
 def sanitize(text):
     """Replace Unicode chars that Helvetica can't handle."""
     return (text
-        .replace("\u2014", " - ")   # em-dash
-        .replace("\u2013", "-")     # en-dash
-        .replace("\u2018", "'")     # left single quote
-        .replace("\u2019", "'")     # right single quote
-        .replace("\u201c", '"')     # left double quote
-        .replace("\u201d", '"')     # right double quote
-        .replace("\u2026", "...")   # ellipsis
-        .replace("\u2022", "*")     # bullet
-        .replace("\u2192", "->")    # arrow
+        .replace("\u2014", " - ")
+        .replace("\u2013", "-")
+        .replace("\u2018", "'")
+        .replace("\u2019", "'")
+        .replace("\u201c", '"')
+        .replace("\u201d", '"')
+        .replace("\u2026", "...")
+        .replace("\u2022", "*")
+        .replace("\u2192", "->")
     )
 
 
@@ -42,12 +42,6 @@ class EssayPDF(FPDF):
         self.multi_cell(0, 10, sanitize(text), align="C")
         self.ln(2)
 
-    def add_subtitle_line(self, text):
-        self.set_font("Helvetica", "B", 11)
-        self.set_text_color(50, 50, 50)
-        self.multi_cell(0, 6, sanitize(text), align="C")
-        self.ln(1)
-
     def add_section_heading(self, text):
         self.ln(4)
         self.set_font("Helvetica", "B", 13)
@@ -59,10 +53,7 @@ class EssayPDF(FPDF):
         text = sanitize(text.strip())
         if not text:
             return
-
         self.set_text_color(40, 40, 40)
-
-        # Handle bold text marked with **
         parts = re.split(r'(\*\*.*?\*\*)', text)
         for part in parts:
             if part.startswith('**') and part.endswith('**'):
@@ -85,31 +76,63 @@ pdf.set_auto_page_break(auto=True, margin=20)
 pdf.add_page()
 
 # --- Title Block ---
-pdf.ln(10)
+pdf.ln(8)
 pdf.add_main_title("NeuroScope")
 pdf.add_main_title("AI-Powered 3D Neural Network Architecture\nVisualizer and Analyzer")
-pdf.ln(6)
+pdf.ln(4)
 
-# Metadata block
+# --- Metadata Box ---
 pdf.set_draw_color(180, 180, 180)
 pdf.set_fill_color(245, 247, 250)
 pdf.set_font("Helvetica", "", 10)
 pdf.set_text_color(80, 80, 80)
 
 meta_y = pdf.get_y()
-pdf.rect(30, meta_y, 150, 30, style="F")
+pdf.rect(25, meta_y, 160, 48, style="F")
 pdf.set_y(meta_y + 3)
 pdf.cell(0, 6, "Project Name: NeuroScope", align="C", new_x="LMARGIN", new_y="NEXT")
+pdf.cell(0, 6, "Team Name: DigiNeurons", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.cell(0, 6, "Category: Education Enhancement", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.cell(0, 6, "Competition: AYAIR 2026 - Third Edition", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.cell(0, 6, "Date: June 2026", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.ln(8)
+pdf.ln(10)
+
+# --- Team Members Box ---
+pdf.set_font("Helvetica", "B", 11)
+pdf.set_text_color(30, 60, 120)
+pdf.cell(0, 7, "Team Members", align="C", new_x="LMARGIN", new_y="NEXT")
+pdf.ln(2)
+
+pdf.set_font("Helvetica", "", 9.5)
+pdf.set_text_color(60, 60, 60)
+
+team = [
+    ("Hazem Elerefy", "Team Leader & ML Architect"),
+    ("Yossef Sharif", "Backend Engineer"),
+    ("Yomna Ashraf", "Frontend Engineer & UI/UX Designer"),
+    ("Shahd Khairy", "ML Research & Educational Content Lead"),
+    ("Omar", "DevOps & Integration Engineer"),
+]
+
+team_y = pdf.get_y()
+pdf.set_fill_color(240, 243, 248)
+pdf.rect(25, team_y, 160, len(team) * 7 + 6, style="F")
+pdf.set_y(team_y + 3)
+
+for name, role in team:
+    pdf.set_font("Helvetica", "B", 9.5)
+    pdf.cell(70, 7, sanitize(name), align="R")
+    pdf.set_font("Helvetica", "", 9.5)
+    pdf.cell(10, 7, " - ")
+    pdf.cell(80, 7, sanitize(role), new_x="LMARGIN", new_y="NEXT")
+
+pdf.ln(6)
 
 # --- Body Sections ---
 sections = content.split("\n## ")
 for i, section in enumerate(sections):
     if i == 0:
-        continue  # Skip header metadata
+        continue
 
     lines = section.strip().split("\n")
     heading = lines[0].strip()
