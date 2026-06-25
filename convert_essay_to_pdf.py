@@ -107,11 +107,11 @@ pdf.set_font("Helvetica", "", 9.5)
 pdf.set_text_color(60, 60, 60)
 
 team = [
-    ("Hazem Elerefy", "Team Leader & ML Architect"),
-    ("Yossef Sharif", "Backend Engineer"),
-    ("Yomna Ashraf", "Frontend Engineer & UI/UX Designer"),
-    ("Shahd Khairy", "ML Research & Educational Content Lead"),
-    ("Omar", "DevOps & Integration Engineer"),
+    ("Hazem Elerefy", "Technical Lead & ML/DL Engineer"),
+    ("Omar", "Backend Developer"),
+    ("Shahd Khairy", "Frontend Developer"),
+    ("Yomna Ashraf", "DL/ML Research Analyst"),
+    ("Yossef Sharif", "Data Analyst & QA"),
 ]
 
 team_y = pdf.get_y()

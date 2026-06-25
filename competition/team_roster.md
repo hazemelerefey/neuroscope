@@ -17,34 +17,34 @@
 | | |
 |---|---|
 | **Name** | Hazem Elerefy |
-| **Role** | Project Lead & ML Architect |
-| **Responsibilities** | Overall project vision, system architecture design, ML analysis engine development, competition strategy, technical decision-making, code review, and final deliverable quality |
+| **Role** | Technical Lead & ML/DL Engineer |
+| **Responsibilities** | Overall project vision, system architecture design, ONNX model parser, deep learning analysis engine, FLOPs and memory calculation, code review, frontend-backend integration, and competition strategy |
 
 ### Members
 
 | | |
 |---|---|
-| **Name** | Yossef Sharif |
-| **Role** | Backend Engineer |
-| **Responsibilities** | Python backend development (FastAPI), ONNX model parser implementation, analysis rules engine, FLOPs and memory calculation, API design and endpoints, data flow architecture, and backend testing |
-
-| | |
-|---|---|
-| **Name** | Yomna Ashraf |
-| **Role** | Frontend Engineer & UI/UX Designer |
-| **Responsibilities** | React and TypeScript frontend development, Three.js 3D visualization engine, user interface design and styling, component architecture, frontend-backend API integration, responsive design, and user experience optimization |
+| **Name** | Omar |
+| **Role** | Backend Developer |
+| **Responsibilities** | FastAPI application setup, API route development (upload, analyze, export, compare), request/response models, error handling, Docker containerization, deployment infrastructure, CI/CD pipeline, and backend testing |
 
 | | |
 |---|---|
 | **Name** | Shahd Khairy |
-| **Role** | ML Research & Educational Content Lead |
-| **Responsibilities** | Deep learning architecture anti-pattern research, educational layer descriptions, architecture analysis rule definitions, model card standards, multilingual content (Arabic translations), competition documentation, and academic reference management |
+| **Role** | Frontend Developer |
+| **Responsibilities** | React and TypeScript frontend development, Three.js 3D visualization engine, component architecture, UI/UX design and styling, frontend-backend API integration, responsive design, and frontend testing |
 
 | | |
 |---|---|
-| **Name** | Omar |
-| **Role** | DevOps & Integration Engineer |
-| **Responsibilities** | Docker containerization, CI/CD pipeline setup, VS Code extension development, deployment infrastructure, testing automation, third-party integrations, and performance optimization |
+| **Name** | Yomna Ashraf |
+| **Role** | DL/ML Research Analyst |
+| **Responsibilities** | Deep learning architecture anti-pattern research, educational layer descriptions for neural network components, architecture analysis rule definitions, model card standards, Arabic language translations, competition documentation, and academic reference management |
+
+| | |
+|---|---|
+| **Name** | Yossef Sharif |
+| **Role** | Data Analyst & QA |
+| **Responsibilities** | Sample deep learning model preparation (ONNX model collection and validation), test case writing, data validation, FLOPs and memory calculation verification, documentation formatting, presentation materials, and manual quality assurance testing |
 
 ---
 
@@ -54,11 +54,11 @@ This project requires five distinct skill sets that map directly to the team:
 
 | Project Component | Skill Needed | Assigned To |
 |---|---|---|
-| **System Architecture** | ML knowledge + software design | Hazem (Project Lead) |
-| **Backend API + Parser** | Python + FastAPI + ONNX | Yossef (Backend) |
-| **3D Visualization + UI** | React + Three.js + CSS | Yomna (Frontend) |
-| **ML Rules + Content** | Deep learning + writing + Arabic | Shahd (Research) |
-| **Deployment + VS Code** | Docker + DevOps + extensions | Omar (DevOps) |
+| **System Architecture + DL Engine** | Python + deep learning + ONNX | Hazem (Technical Lead) |
+| **Backend API + Deployment** | Python + FastAPI + Docker | Omar (Backend) |
+| **3D Visualization + UI** | React + Three.js + CSS | Shahd (Frontend) |
+| **DL Research + Educational Content** | Deep learning + writing + Arabic | Yomna (Research) |
+| **Data + Testing + QA** | Data preparation + testing | Yossef (Data/QA) |
 
 ---
 
@@ -67,7 +67,7 @@ This project requires five distinct skill sets that map directly to the team:
 **Digi** = DigiTalians, the MCIT initiative we study in
 **Neurons** = The fundamental units of neural networks
 
-The name connects our educational background (MCIT's DigiTalians program) with our project's domain (neural networks). It tells judges immediately that we are students applying what we learned to build something meaningful.
+The name connects our educational background (MCIT's DigiTalians program) with our project's domain (deep learning and neural networks). It tells judges immediately that we are students applying what we learned to build something meaningful.
 
 ---
 
@@ -75,10 +75,10 @@ The name connects our educational background (MCIT's DigiTalians program) with o
 
 **Recommendation:** Keep "NeuroScope" as the tool name. Here's why:
 
-- **"Neuro"** = Neural network (the domain)
+- **"Neuro"** = Neural network (the domain — deep learning)
 - **"Scope"** = To inspect, examine, understand (the function)
 
-"NeuroScope" is immediately descriptive to any ML practitioner worldwide. "DigiNeurons" is our team identity; "NeuroScope" is our product. This separation is professional — like how Google the company makes Android the product.
+"NeuroScope" is immediately descriptive to any ML/DL practitioner worldwide. "DigiNeurons" is our team identity; "NeuroScope" is our product. This separation is professional — like how Google the company makes Android the product.
 
 ---
 
