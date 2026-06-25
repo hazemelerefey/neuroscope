@@ -8,7 +8,7 @@
 
 **Competition:** The Third Edition of the Presidential African Youth in Artificial Intelligence and Robotics Competition 2026 (AYAIR)
 
-**Submitted by:** Hazem Khaled Ezzat
+**Submitted by:** Hazem Khaled Ezzat Abdel Halim
 
 **Date:** June 2026
 

@@ -16,7 +16,7 @@
 
 | | |
 |---|---|
-| **Name** | Hazem Elerefy |
+| **Name** | Hazem Khaled Ezzat Abdel Halim |
 | **Role** | Technical Lead & ML/DL Engineer |
 | **Responsibilities** | Overall project vision, system architecture design, ONNX model parser, deep learning analysis engine, FLOPs and memory calculation, code review, frontend-backend integration, and competition strategy |
 
