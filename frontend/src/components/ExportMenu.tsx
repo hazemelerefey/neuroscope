@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import axios from 'axios'
 
 interface ExportMenuProps {
@@ -5,7 +6,10 @@ interface ExportMenuProps {
 }
 
 export default function ExportMenu({ modelId }: ExportMenuProps) {
+  const [error, setError] = useState<string | null>(null)
+
   const handleExport = async (format: string) => {
+    setError(null)
     try {
       const response = await axios.post(
         '/api/export',
@@ -21,7 +25,8 @@ export default function ExportMenu({ modelId }: ExportMenuProps) {
       document.body.appendChild(link)
       link.click()
       link.remove()
-    } catch (err) {
+    } catch (err: any) {
+      setError(err.response?.data?.detail || `Export to ${format} failed.`)
       console.error('Export failed:', err)
     }
   }
@@ -36,6 +41,7 @@ export default function ExportMenu({ modelId }: ExportMenuProps) {
         <button onClick={() => handleExport('glb')} disabled>🎮 3D Model (GLB)</button>
         <button onClick={() => handleExport('pdf')} disabled>📑 Report (PDF)</button>
       </div>
+      {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
     </div>
   )
 }

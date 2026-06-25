@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
@@ -59,8 +59,10 @@ function EdgeLine({ start, end, edgeType }: any) {
   const color = edgeType === 'residual' ? '#10b981' :
                 edgeType === 'skip' ? '#f59e0b' : '#94a3b8'
 
-  const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)]
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)
+  const lineGeometry = useMemo(() => {
+    const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)]
+    return new THREE.BufferGeometry().setFromPoints(points)
+  }, [start[0], start[1], start[2], end[0], end[1], end[2]])
 
   return (
     <line geometry={lineGeometry}>
@@ -82,7 +84,7 @@ export default function Canvas3D({ graphData, onLayerClick }: Canvas3DProps) {
 
   return (
     <div className="canvas-3d" style={{ width: '100%', height: '100%' }}>
-      <Canvas>
+      <Canvas gl={{ antialias: true }} dpr={[1, 2]}>
         <PerspectiveCamera makeDefault position={[0, 5, 15]} />
         <OrbitControls enableDamping dampingFactor={0.05} />
 

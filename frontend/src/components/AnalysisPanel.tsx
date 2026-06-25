@@ -9,9 +9,11 @@ interface AnalysisPanelProps {
 export default function AnalysisPanel({ graphData, onAnalysisComplete }: AnalysisPanelProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [results, setResults] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true)
+    setError(null)
     try {
       const response = await axios.post('/api/analyze', {
         model_id: graphData.model_name,
@@ -19,6 +21,7 @@ export default function AnalysisPanel({ graphData, onAnalysisComplete }: Analysi
       setResults(response.data)
       onAnalysisComplete(response.data)
     } catch (err: any) {
+      setError(err.response?.data?.detail || 'Analysis failed. Please try again.')
       console.error('Analysis failed:', err)
     } finally {
       setIsAnalyzing(false)
@@ -30,13 +33,16 @@ export default function AnalysisPanel({ graphData, onAnalysisComplete }: Analysi
       <h3>🔍 Architecture Analysis</h3>
 
       {!results ? (
-        <button
-          className="analyze-btn"
-          onClick={handleAnalyze}
-          disabled={isAnalyzing}
-        >
-          {isAnalyzing ? 'Analyzing...' : 'Run Analysis'}
-        </button>
+        <>
+          <button
+            className="analyze-btn"
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? 'Analyzing...' : 'Run Analysis'}
+          </button>
+          {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
+        </>
       ) : (
         <div className="analysis-results">
           <div className="health-score">

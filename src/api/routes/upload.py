@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from src.parsers.onnx_parser import ONNXParser
 from src.graph import NeuroScopeGraph
+from src.api.routes.analyze import graph_store
 
 router = APIRouter()
 
@@ -65,6 +66,9 @@ async def upload_model(file: UploadFile = File(...)):
     finally:
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
+
+    # Store graph in shared store for analyze/export routes
+    graph_store[graph.model_name] = graph
 
     # Serialize graph for frontend
     graph_json = _serialize_graph(graph)
