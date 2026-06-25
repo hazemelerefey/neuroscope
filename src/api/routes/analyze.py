@@ -9,11 +9,9 @@ from src.graph import NeuroScopeGraph
 from src.analysis import AnalysisEngine
 from src.analysis.flops import calculate_flops
 from src.analysis.memory import estimate_memory, estimate_training_time
+from src.store import graph_store
 
 router = APIRouter()
-
-# In-memory graph store (replace with Redis/DB in production)
-graph_store: dict[str, NeuroScopeGraph] = {}
 
 analysis_engine = AnalysisEngine()
 

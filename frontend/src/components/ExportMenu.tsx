@@ -1,15 +1,33 @@
 import { useState } from 'react'
 import axios from 'axios'
+import { Download, FileText, Globe, Loader2 } from 'lucide-react'
 
 interface ExportMenuProps {
   modelId: string
 }
 
+interface ExportOption {
+  format: string
+  label: string
+  icon: React.ReactNode
+  enabled: boolean
+}
+
+const EXPORT_OPTIONS: ExportOption[] = [
+  { format: 'markdown', label: 'Report (MD)', icon: <FileText size={14} />, enabled: true },
+  { format: 'html', label: '3D Viewer (HTML)', icon: <Globe size={14} />, enabled: true },
+  { format: 'svg', label: 'Diagram (SVG)', icon: <FileText size={14} />, enabled: false },
+  { format: 'glb', label: '3D Model (GLB)', icon: <FileText size={14} />, enabled: false },
+  { format: 'pdf', label: 'Report (PDF)', icon: <FileText size={14} />, enabled: false },
+]
+
 export default function ExportMenu({ modelId }: ExportMenuProps) {
   const [error, setError] = useState<string | null>(null)
+  const [loadingFormat, setLoadingFormat] = useState<string | null>(null)
 
   const handleExport = async (format: string) => {
     setError(null)
+    setLoadingFormat(format)
     try {
       const response = await axios.post(
         '/api/export',
@@ -25,21 +43,52 @@ export default function ExportMenu({ modelId }: ExportMenuProps) {
       document.body.appendChild(link)
       link.click()
       link.remove()
-    } catch (err: any) {
-      setError(err.response?.data?.detail || `Export to ${format} failed.`)
-      console.error('Export failed:', err)
+      window.URL.revokeObjectURL(url)
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        // Blob errors need special handling — try to read as text
+        const data = err.response?.data
+        if (data instanceof Blob) {
+          try {
+            const text = await data.text()
+            const parsed = JSON.parse(text)
+            setError(parsed.detail || `Export to ${format} failed.`)
+          } catch {
+            setError(`Export to ${format} failed.`)
+          }
+        } else {
+          setError(data?.detail || `Export to ${format} failed.`)
+        }
+      } else {
+        setError(`Export to ${format} failed.`)
+      }
+    } finally {
+      setLoadingFormat(null)
     }
   }
 
   return (
     <div className="export-menu">
-      <h3>📤 Export</h3>
+      <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Download size={16} />
+        Export
+      </h3>
       <div className="export-buttons">
-        <button onClick={() => handleExport('markdown')}>📄 Report (MD)</button>
-        <button onClick={() => handleExport('html')}>🌐 3D Viewer (HTML)</button>
-        <button onClick={() => handleExport('svg')} disabled>📐 Diagram (SVG)</button>
-        <button onClick={() => handleExport('glb')} disabled>🎮 3D Model (GLB)</button>
-        <button onClick={() => handleExport('pdf')} disabled>📑 Report (PDF)</button>
+        {EXPORT_OPTIONS.map((opt) => (
+          <button
+            key={opt.format}
+            onClick={() => handleExport(opt.format)}
+            disabled={!opt.enabled || loadingFormat !== null}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            {loadingFormat === opt.format ? (
+              <Loader2 size={14} className="spinner" style={{ animation: 'spin 0.8s linear infinite' }} />
+            ) : (
+              opt.icon
+            )}
+            {opt.label}
+          </button>
+        ))}
       </div>
       {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
     </div>

@@ -1,7 +1,7 @@
 """
 Base parser interface.
 
-All format-specific parsers (ONNX, PyTorch, Keras) implement this interface
+All format-specific parsers (ONNX, PyTorch, Keras, TFLite) implement this interface
 and produce a unified NeuroScopeGraph.
 """
 
@@ -70,3 +70,36 @@ class BaseParser(ABC):
             ".pbtxt": "tensorflow",
         }
         return format_map.get(ext)
+
+
+def get_all_parsers() -> list[BaseParser]:
+    """
+    Get instances of all available parsers.
+
+    Returns:
+        List of BaseParser instances for all supported formats.
+    """
+    from src.parsers.onnx_parser import ONNXParser
+
+    parsers: list[BaseParser] = [ONNXParser()]
+
+    # Import optional parsers (gracefully skip if dependencies missing)
+    try:
+        from src.parsers.pytorch_parser import PyTorchParser
+        parsers.append(PyTorchParser())
+    except ImportError:
+        pass
+
+    try:
+        from src.parsers.keras_parser import KerasParser
+        parsers.append(KerasParser())
+    except ImportError:
+        pass
+
+    try:
+        from src.parsers.tflite_parser import TFLiteParser
+        parsers.append(TFLiteParser())
+    except ImportError:
+        pass
+
+    return parsers

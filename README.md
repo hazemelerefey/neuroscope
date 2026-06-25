@@ -1,37 +1,58 @@
 # 🧠 NeuroScope
 
 > **AI-Powered 3D Neural Network Architecture Visualizer & Analyzer**
-> Upload any model → See it in 3D → Understand what's wrong → Export everything
+> Upload any ONNX model → See it in 3D → Understand what's wrong → Learn why it matters
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
+[![Node 18+](https://img.shields.io/badge/node-18+-green.svg)](https://nodejs.org)
 [![Status: In Development](https://img.shields.io/badge/status-in%20development-yellow.svg)](#)
 
 ---
 
 ## 🎯 What is NeuroScope?
 
-NeuroScope is a web-based tool that helps ML students and developers **understand, visualize, and debug** neural network architectures. Unlike existing tools that only show static diagrams, NeuroScope **analyzes your model and tells you what's wrong with it**.
+NeuroScope is a web-based tool that helps ML students and developers **understand, visualize, and debug** neural network architectures. Upload an ONNX model file and instantly see it rendered as an interactive 3D scene — with automated analysis that catches common architecture mistakes.
 
-### Key Features
+### Current Features (Implemented)
 
 | Feature | Description |
 |---------|-------------|
-| 🎮 **3D Visualization** | Interactive Three.js rendering of your model architecture |
-| 🔍 **Architecture Linter** | 47+ rules that detect common ML anti-patterns |
-| 📊 **FLOPs & Memory** | Per-layer computation cost and memory estimation |
-| 🔄 **Universal Format** | Supports ONNX, PyTorch (.pt), Keras (.h5), TensorFlow Lite |
-| 📤 **Export Suite** | GLB (3D), SVG (diagrams), PDF (reports), Markdown |
-| 🆚 **Model Comparison** | Side-by-side architecture diff |
-| 🌍 **Multilingual** | English, French, Arabic, Swahili, Portuguese |
-| 📱 **Works Anywhere** | Browser-based, no installation, works on mobile |
+| 🎮 **3D Visualization** | Interactive Three.js rendering of your model architecture with click-to-inspect |
+| 🔍 **Architecture Linter** | 11 rules across layer, architecture, and efficiency categories |
+| 📊 **FLOPs & Memory** | Per-layer computation cost and memory footprint estimation |
+| 📁 **ONNX Support** | Full ONNX model parsing with shape inference and weight extraction |
+| 📖 **Educational Content** | Plain-language descriptions of what each layer does and common mistakes |
+| 🐳 **Docker Ready** | Docker Compose setup for easy local deployment |
+
+### Roadmap (In Development)
+
+| Feature | Status |
+|---------|--------|
+| 🔄 **Multi-Format Parsers** | PyTorch (.pt), Keras (.h5), TFLite (.tflite) — building |
+| 🆚 **Model Comparison** | Side-by-side architecture diff — building |
+| 📤 **Export Suite** | GLB (3D), PDF (reports), Markdown — building |
+| 🌍 **Multilingual** | French, Arabic, Swahili, Portuguese — planned |
+| 📱 **VS Code Extension** | Real-time 3D visualization in VS Code — planned |
+| 🔌 **Offline PWA** | Works without internet after first load — planned |
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: Use the Web App (Coming Soon)
-Visit `https://neuroscope.app` (after deployment)
+### Option 1: Docker (Recommended)
+
+```bash
+# Clone the repo
+git clone https://github.com/YOUR_USERNAME/neuroscope.git
+cd neuroscope
+
+# Start with Docker Compose
+docker-compose up --build
+```
+
+- Backend: `http://localhost:8000`
+- Frontend: `http://localhost:5173`
 
 ### Option 2: Run Locally
 
@@ -42,18 +63,12 @@ cd neuroscope
 
 # Backend
 pip install -r requirements.txt
-cd backend && uvicorn main:app --reload
+uvicorn src.main:app --reload
 
 # Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
-```
-
-### Option 3: Docker
-
-```bash
-docker-compose up --build
 ```
 
 ---
@@ -62,39 +77,35 @@ docker-compose up --build
 
 ```
 neuroscope/
-├── competition/              # Competition submission materials
-├── research/                 # Deep research reports (198KB)
-├── docs/                     # Documentation & architecture
-│
 ├── src/                      # Python backend (FastAPI)
-│   ├── parsers/              # Model file parsers (ONNX, PyTorch, Keras)
+│   ├── parsers/              # Model file parsers
+│   │   └── onnx_parser.py   # ONNX parser (implemented)
 │   ├── analysis/             # Architecture linter & stats
-│   │   └── rules/            # Anti-pattern detection rules
+│   │   ├── rules/            # Anti-pattern detection rules (11 rules)
+│   │   ├── flops.py          # FLOPs calculator
+│   │   └── memory.py         # Memory estimator
 │   ├── graph/                # Internal graph representation
-│   ├── export/               # Export engines (GLB, SVG, PDF, MD)
-│   └── utils/                # Shared utilities
+│   ├── api/                  # FastAPI routes
+│   │   └── routes/           # upload, analyze, export, compare
+│   └── main.py               # FastAPI entry point
 │
 ├── frontend/                 # React + Three.js web app
-│   ├── src/
-│   │   ├── components/       # UI components
-│   │   ├── hooks/            # React hooks
-│   │   ├── three/            # Three.js 3D rendering
-│   │   └── utils/            # Frontend utilities
-│   └── public/               # Static assets
-│
-├── data/                     # Sample models for testing
-│   ├── samples/              # Example .onnx, .pt, .h5 files
-│   └── fixtures/             # Test data
+│   └── src/
+│       ├── components/       # UI components (UploadZone, Canvas3D, etc.)
+│       ├── hooks/            # React hooks
+│       └── main.tsx          # Entry point
 │
 ├── config/                   # Configuration files
 │   ├── analysis_rules.yaml   # Linter rules & thresholds
 │   ├── layer_shapes.yaml     # Layer → 3D shape mapping
-│   └── languages/            # i18n translations
+│   └── languages/            # i18n (English only currently)
 │
-├── tests/                    # Test suite
-├── reports/                  # Generated reports & figures
 ├── docker/                   # Dockerfiles
-└── notebooks/                # Prototyping notebooks
+├── docs/                     # Documentation
+├── research/                 # Technical research reports
+├── tests/                    # Test suite
+├── docker-compose.yml        # Docker Compose config
+└── requirements.txt          # Python dependencies
 ```
 
 ---
@@ -102,12 +113,12 @@ neuroscope/
 ## 🏗️ How It Works
 
 ```
-Upload Model (.onnx/.pt/.h5)
+Upload ONNX Model (.onnx)
         │
         ▼
 ┌─────────────┐     ┌──────────────┐     ┌───────────────┐
-│   PARSER    │────▶│ GRAPH BUILDER│────▶│   ANALYZER    │
-│  (Extract   │     │  (Nodes +    │     │  (47+ rules:  │
+│ ONNX PARSER │────▶│ GRAPH BUILDER│────▶│   ANALYZER    │
+│  (Extract   │     │  (Nodes +    │     │  (11 rules:   │
 │   layers)   │     │   Edges)     │     │   FLOPs +     │
 └─────────────┘     └──────────────┘     │   Memory)     │
                                           └───────┬───────┘
@@ -115,9 +126,9 @@ Upload Model (.onnx/.pt/.h5)
                     ┌─────────────────────────────┼──────────┐
                     ▼                             ▼          ▼
              ┌──────────┐              ┌──────────┐  ┌──────────┐
-             │  3D View │              │ Analysis │  │  Export  │
-             │ (Three.js│              │ Panel    │  │ GLB/SVG/ │
-             └──────────┘              └──────────┘  │ PDF/MD   │
+             │  3D View │              │ Analysis │  │  Stats   │
+             │ (Three.js│              │ Panel    │  │ (FLOPs/  │
+             └──────────┘              └──────────┘  │  Memory) │
                                                      └──────────┘
 ```
 
@@ -131,29 +142,61 @@ NeuroScope is submitted to the **Presidential African Youth in AI and Robotics C
 
 ### Why NeuroScope Matters for Africa
 
-- **Free & Open Source** — No cost barrier
-- **Works Offline** — PWA for low-connectivity areas
-- **Browser-Based** — No GPU, no installation, works on phones
-- **Multilingual** — French, Arabic, Swahili, Portuguese
-- **Bridges the Mentorship Gap** — Automated guidance where no senior ML engineer is available
+- **Free & Open Source** — No cost barrier, MIT License
+- **Browser-Based** — No GPU, no installation, works on any device
+- **Automated Guidance** — Catches common mistakes where no senior ML engineer is available
+- **Educational** — Every layer has a plain-language explanation
+- **Deployable** — Docker setup for institutions to run locally
 
 ---
 
-## 📅 Timeline
+## 📅 Development Timeline
 
-| Date | Milestone |
-|------|-----------|
-| **30 Jun 2026** | Competition submission (essay + registration) |
-| **Jul 2026** | Core parser + basic 3D visualization |
-| **Aug 2026** | Architecture linter + export features |
-| **Sep 2026** | Polish, deploy, demo video |
-| **Oct 2026** | Finals (if selected) |
+| Date | Milestone | Status |
+|------|-----------|--------|
+| **Jun 2026** | ONNX parser + 3D visualization + analysis engine | ✅ Done |
+| **Jul 2026** | PyTorch/Keras parsers + export features | 🚧 In progress |
+| **Aug 2026** | Model comparison + advanced analysis | 📋 Planned |
+| **Sep 2026** | Polish, deploy, demo video | 📋 Planned |
+| **Oct 2026** | Finals (if selected) | 📋 Planned |
 
 ---
 
 ## 🤝 Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Here's how to get started:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/my-feature`)
+3. **Commit** your changes (`git commit -m 'Add my feature'`)
+4. **Push** to the branch (`git push origin feature/my-feature`)
+5. **Open** a Pull Request
+
+### Development Setup
+
+```bash
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/neuroscope.git
+cd neuroscope
+
+# Backend
+pip install -r requirements.txt
+pip install pytest httpx  # for testing
+pytest
+
+# Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+### Areas Where Help is Needed
+
+- Implementing PyTorch/Keras/TFLite parsers
+- Adding new analysis rules
+- Improving 3D visualization
+- Writing educational layer descriptions
+- Adding test coverage
 
 ---
 

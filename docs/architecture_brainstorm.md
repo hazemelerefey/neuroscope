@@ -86,7 +86,12 @@ modelviz/
 
 ---
 
-## 2. HOW NEUROSCOPE WILL WORK (Internal Design)
+## 2. HOW NEUROSCOPE WORKS (Internal Design)
+
+> **Implementation Status Legend:**
+> - ✅ **Implemented** — working in the current codebase
+> - 🚧 **In Development** — actively being built
+> - 📋 **Planned** — designed but not started
 
 ### The Complete Pipeline
 
@@ -128,7 +133,7 @@ modelviz/
 
 **NeuroScope's key difference:** Works with FILES, not code.
 
-#### ONNX Parser (Primary — Universal Format)
+#### ONNX Parser (Primary — Universal Format) ✅ IMPLEMENTED
 ```python
 # What ONNX gives us from the protobuf:
 ModelProto
@@ -151,19 +156,19 @@ ModelProto
 
 **Advantage over modelviz:** modelviz needs the Python model object. We just need the file.
 
-#### PyTorch Parser (For .pt files)
+#### PyTorch Parser (For .pt files) 🚧 IN DEVELOPMENT
 ```
 .pt file → torch.load() → model object → torch.onnx.export() → ONNX → parse ONNX
 ```
 Or use `torchinfo` to get summary directly.
 
-#### Keras Parser (For .h5/.keras files)
+#### Keras Parser (For .h5/.keras files) 🚧 IN DEVELOPMENT
 ```
 .keras file → ZIP → config.json → parse JSON structure
 .h5 file → h5py → model config → parse JSON structure
 ```
 
-### Phase 2: Graph Construction (The Internal Model)
+### Phase 2: Graph Construction (The Internal Model) ✅ IMPLEMENTED
 
 **Unified Graph Format** — all parsers produce the same intermediate representation:
 
@@ -197,7 +202,7 @@ class NeuroScopeGraph:
     architecture_type: str       # "CNN", "Transformer", "RNN", "GAN", etc.
 ```
 
-### Phase 3: Architecture Analysis (THE DIFFERENTIATOR)
+### Phase 3: Architecture Analysis (THE DIFFERENTIATOR) ✅ IMPLEMENTED
 
 This is what makes NeuroScope unique. The analyzer takes the graph and runs a rules engine.
 
@@ -210,50 +215,49 @@ This is what makes NeuroScope unique. The analyzer takes the graph and runs a ru
 │  Input: NeuroScopeGraph                 │
 │                                         │
 │  ┌─────────────────────────────────┐   │
-│  │  Layer-Level Checks (8 rules)   │   │
+│  │  Layer-Level Checks (4 rules) ✅ │   │
 │  │  • Missing activation           │   │
 │  │  • Sigmoid in deep networks     │   │
 │  │  • BN placement                 │   │
-│  │  • Wrong activation for task    │   │
+│  │  • Activation after final layer │   │
 │  └─────────────┬───────────────────┘   │
 │                │                        │
 │  ┌─────────────▼───────────────────┐   │
-│  │  Architecture-Level (7 rules)   │   │
+│  │  Architecture-Level (4 rules) ✅│   │
 │  │  • No skip connections          │   │
 │  │  • FC parameter explosion       │   │
 │  │  • Missing dropout              │   │
-│  │  • Dimension mismatches         │   │
-│  └─────────────┬───────────────────┘   │
-│                │                        │
-│  ┌─────────────▼───────────────────┐   │
-│  │  Efficiency Checks (5 rules)    │   │
-│  │  • Redundant layers             │   │
 │  │  • Premature flattening         │   │
-│  │  • Large kernel inefficiency    │   │
 │  └─────────────┬───────────────────┘   │
 │                │                        │
 │  ┌─────────────▼───────────────────┐   │
-│  │  Task-Specific (18 rules)       │   │
-│  │  • CNN anti-patterns            │   │
-│  │  • RNN/LSTM anti-patterns       │   │
-│  │  • Transformer anti-patterns    │   │
+│  │  Efficiency Checks (3 rules) ✅ │   │
+│  │  • Redundant convolutions       │   │
+│  │  • Large kernels                │   │
+│  │  • No pooling after conv        │   │
 │  └─────────────┬───────────────────┘   │
 │                │                        │
 │  ┌─────────────▼───────────────────┐   │
-│  │  Stats Calculator               │   │
+│  │  Task-Specific (18 rules) 📋   │   │
+│  │  • CNN/RNN/Transformer/GAN      │   │
+│  │  • Planned, not yet implemented │   │
+│  └─────────────┬───────────────────┘   │
+│                │                        │
+│  ┌─────────────▼───────────────────┐   │
+│  │  Stats Calculator ✅            │   │
 │  │  • FLOPs per layer + total      │   │
 │  │  • Memory footprint             │   │
-│  │  • Training time estimate       │   │
-│  │  • Model complexity score       │   │
 │  └─────────────┬───────────────────┘   │
 │                │                        │
 │                ▼                        │
 │  Output: AnalysisReport                 │
 │  • findings[] (severity, message, fix)  │
-│  • stats (flops, memory, time)          │
-│  • model_card (auto-generated)          │
+│  • stats (flops, memory)                │
 └─────────────────────────────────────────┘
 ```
+
+**Current rule count: 11 rules** (4 layer + 4 architecture + 3 efficiency)
+**Planned: 18 additional task-specific rules** (CNN, RNN, Transformer, GAN anti-patterns)
 
 #### Example Detection Logic
 
@@ -296,7 +300,7 @@ def check_vanishing_gradient(graph: NeuroScopeGraph) -> list[Finding]:
     return findings
 ```
 
-### Phase 4: 3D Visualization (The Visual Layer)
+### Phase 4: 3D Visualization (The Visual Layer) ✅ IMPLEMENTED
 
 **How it differs from modelviz:**
 
@@ -305,9 +309,9 @@ def check_vanishing_gradient(graph: NeuroScopeGraph) -> list[Finding]:
 | Data source | Python model object | Parsed ONNX/graph data |
 | Connection detection | Linear only | Sequential + skip + residual |
 | Layer info | Type, shapes, params | Type, shapes, params, FLOPs, memory |
-| Interaction | Hover only | Click + hover + select + filter |
+| Interaction | Hover only | Click + hover + select |
 | Annotation | None | Layer descriptions + warnings |
-| Comparison | None | Side-by-side mode |
+| Comparison | None | 📋 Planned (side-by-side mode) |
 
 **3D Shape Mapping (enhanced from modelviz):**
 
@@ -334,15 +338,15 @@ def check_vanishing_gradient(graph: NeuroScopeGraph) -> list[Finding]:
 - Step through forward pass animation
 - Compare two models side by side
 
-### Phase 5: Export (The Output Layer)
+### Phase 5: Export (The Output Layer) 🚧 IN DEVELOPMENT
 
-| Format | Content |
-|--------|---------|
-| **GLB/GLTF** | 3D model file importable into PowerPoint, Blender, web |
-| **SVG** | 2D architecture diagram with annotations |
-| **PDF** | Full analysis report with findings + stats + model card |
-| **Markdown** | Model summary for documentation |
-| **HTML** | Standalone interactive 3D viewer (like modelviz but self-contained) |
+| Format | Content | Status |
+|--------|---------|--------|
+| **GLB/GLTF** | 3D model file importable into PowerPoint, Blender, web | 📋 Planned |
+| **SVG** | 2D architecture diagram with annotations | 📋 Planned |
+| **PDF** | Full analysis report with findings + stats | 🚧 Building |
+| **Markdown** | Model summary for documentation | 🚧 Building |
+| **HTML** | Standalone interactive 3D viewer | 📋 Planned |
 
 ---
 
@@ -529,30 +533,31 @@ FLOPS_FORMULAS = {
 
 ## 5. DEVELOPMENT PHASES
 
-### Phase 1 (Week 1-2): Core Pipeline
-- ONNX parser → NeuroScopeGraph
-- Basic 3D visualization (Three.js)
-- File upload endpoint
-- Single model view
+### Phase 1: Core Pipeline ✅ DONE
+- ✅ ONNX parser → NeuroScopeGraph
+- ✅ 3D visualization (Three.js)
+- ✅ File upload endpoint
+- ✅ Single model view
 
-### Phase 2 (Week 3-4): Analysis Engine
-- Layer-level rules (8 rules)
-- Architecture-level rules (7 rules)
-- FLOPs + memory calculation
-- Analysis panel in UI
+### Phase 2: Analysis Engine ✅ DONE
+- ✅ Layer-level rules (4 rules)
+- ✅ Architecture-level rules (4 rules)
+- ✅ Efficiency rules (3 rules)
+- ✅ FLOPs + memory calculation
+- ✅ Analysis panel in UI
 
-### Phase 3 (Week 5-6): Advanced Features
-- Skip connection detection
-- PyTorch + Keras parsers
-- Export (GLB, SVG, PDF)
-- Model comparison mode
+### Phase 3: Advanced Features 🚧 IN PROGRESS
+- ✅ Skip connection detection (basic)
+- 🚧 PyTorch + Keras parsers
+- 🚧 Export (PDF, Markdown)
+- 🚧 Model comparison mode
 
-### Phase 4 (Week 7-8): Polish & Deploy
-- Forward pass animation
-- Model card generation
-- Multilingual support
-- Deploy to cloud
-- Demo video
+### Phase 4: Polish & Deploy 📋 PLANNED
+- 📋 Forward pass animation
+- 📋 Model card generation
+- 📋 Multilingual support
+- 📋 Deploy to cloud
+- 📋 Demo video
 
 ---
 
@@ -562,16 +567,16 @@ FLOPS_FORMULAS = {
 |-----------|-------------|--------|------------|
 | **Input** | Python code | Model file | Model file (drag & drop) |
 | **Visualization** | 2D + 3D (Jupyter) | 2D only | 3D interactive (web) |
-| **Analysis** | ❌ None | ❌ None | ✅ 47+ rules |
+| **Analysis** | ❌ None | ❌ None | ✅ 11 rules (11 more planned) |
 | **FLOPs** | ❌ On roadmap | ❌ None | ✅ Per-layer |
 | **Memory** | ❌ None | ❌ None | ✅ Detailed |
 | **Skip connections** | ❌ TODO | ✅ Shows edges | ✅ Detects + visualizes |
-| **Comparison** | ❌ On roadmap | ❌ None | ✅ Side-by-side |
-| **Export** | HTML only | SVG/PNG | GLB + SVG + PDF + MD |
+| **Comparison** | ❌ On roadmap | ❌ None | 🚧 Building |
+| **Export** | HTML only | SVG/PNG | 🚧 PDF + MD (GLB/SVG planned) |
 | **Education** | ❌ None | ❌ None | ✅ Layer explanations |
 | **Deployment** | pip install | Desktop/web | Web app (any device) |
-| **Offline** | N/A | Desktop only | ✅ PWA |
-| **Language** | English | English | Multi-language |
+| **Offline** | N/A | Desktop only | 📋 Planned (PWA) |
+| **Language** | English | English | English (multilingual planned) |
 
 **One-line pitch:**
 > "modelviz shows you what your model looks like. NeuroScope tells you what's wrong with it."

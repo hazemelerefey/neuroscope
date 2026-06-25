@@ -1,0 +1,54 @@
+# Version control
+.git
+.gitignore
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+dist
+build
+*.egg
+.mypy_cache
+.pytest_cache
+.ruff_cache
+
+# Node artifacts
+node_modules
+.npm
+.eslintcache
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+
+# Testing & docs
+tests/
+docs/
+research/
+competition/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project docs (not needed in containers)
+*.md
+LICENSE
+
+# Data directory (mounted as volume)
+data/

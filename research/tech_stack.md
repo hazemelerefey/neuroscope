@@ -563,7 +563,7 @@ onnxruntime-web is designed for **inference**, not **graph parsing/analysis**. I
 
 | Property | Value |
 |---|---|
-| **Current Version** | 0.138.0 (Jun 2026) |
+| **Current Version** | 0.115.0+ (project uses 0.115.0) |
 | **License** | MIT |
 | **Python** | 3.10 – 3.14 |
 | **GitHub** | fastapi/fastapi (~82k stars) |
@@ -1885,21 +1885,23 @@ def detect_anti_patterns(model_path: str) -> list[dict]:
 
 ### 13.1 System Architecture
 
+> **Implementation Status:** ✅ = Implemented, 🚧 = In Development, 📋 = Planned
+
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    Frontend (React)                       │
+│                    Frontend (React) ✅                    │
 │  ┌────────────┐  ┌──────────────┐  ┌──────────────────┐ │
-│  │  File Upload│  │  3D Canvas   │  │  Details Panel   │ │
-│  │  Component  │  │  (R3F/Drei)  │  │  (Layer Info)    │ │
+│  │  Upload Zone│  │  3D Canvas   │  │  Analysis Panel  │ │
+│  │  ✅         │  │  (Three.js)✅│  │  ✅              │ │
 │  └──────┬─────┘  └──────┬───────┘  └────────┬─────────┘ │
 │         │               │                    │           │
 │  ┌──────┴───────────────┴────────────────────┴─────────┐ │
-│  │              State Management (Zustand/Jotai)        │ │
+│  │              State Management (Zustand) ✅           │ │
 │  └──────────────────────┬──────────────────────────────┘ │
 └─────────────────────────┼────────────────────────────────┘
-                          │ REST API / WebSocket
+                          │ REST API
 ┌─────────────────────────┼────────────────────────────────┐
-│                   Backend (FastAPI)                       │
+│                   Backend (FastAPI) ✅                    │
 │  ┌──────────────────────┴──────────────────────────────┐ │
 │  │                  API Router                          │ │
 │  └──┬──────────┬──────────────┬────────────────────────┘ │
@@ -1907,13 +1909,15 @@ def detect_anti_patterns(model_path: str) -> list[dict]:
 │  ┌──┴───┐  ┌──┴────┐  ┌─────┴──────┐  ┌──────────────┐ │
 │  │ ONNX │  │PyTorch│  │   Keras    │  │  Analysis     │ │
 │  │Parser│  │Parser │  │  Parser    │  │  Engine       │ │
-│  └──┬───┘  └──┬────┘  └─────┬──────┘  │ • FLOPs      │ │
-│     │         │             │          │ • Memory      │ │
-│     └─────────┴──────┬──────┘          │ • Anti-pattern│ │
+│  │ ✅   │  │ 🚧   │  │  🚧       │  │  ✅           │ │
+│  └──┬───┘  └──┬────┘  └─────┬──────┘  │ • FLOPs ✅   │ │
+│     │         │             │          │ • Memory ✅  │ │
+│     └─────────┴──────┬──────┘          │ • 11 rules ✅│ │
 │                      │                 └──────────────┘ │
 │              ┌───────┴─────────┐                         │
 │              │  Unified Graph  │                         │
 │              │  Representation │                         │
+│              │  ✅              │                         │
 │              └─────────────────┘                         │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -1962,19 +1966,18 @@ class ModelGraph(BaseModel):
 
 ### 13.3 Tech Stack Summary
 
-| Layer | Technology | Version | Purpose |
-|---|---|---|---|
-| **Frontend Framework** | React 18 | 18.3+ | UI framework |
-| **3D Rendering** | Three.js + @react-three/fiber | r175+ / v9+ | 3D neural network visualization |
-| **3D Helpers** | @react-three/drei | v10+ | Controls, HTML overlays, text |
-| **State** | Zustand or Jotai | Latest | Lightweight state management |
-| **Styling** | Tailwind CSS + Radix UI | Latest | UI components and styling |
-| **Backend** | FastAPI | 0.138+ | Python API server |
-| **ONNX Parsing** | onnx + onnx-tool | 1.17+ / 1.0+ | Model parsing and profiling |
-| **PyTorch Support** | torch + torchinfo | 2.x | .pt file loading and analysis |
-| **Keras Support** | keras + h5py | 3.x | .h5/.keras parsing |
-| **Visualization Export** | Three.js GLTFExporter | Built-in | GLB/GLTF export |
-| **Charts** | Recharts or Nivo | Latest | FLOPs/params bar charts |
+| Layer | Technology | Version | Purpose | Status |
+|---|---|---|---|---|
+| **Frontend Framework** | React 18 | 18.3+ | UI framework | ✅ |
+| **3D Rendering** | Three.js + @react-three/fiber | r169+ / v8+ | 3D neural network visualization | ✅ |
+| **3D Helpers** | @react-three/drei | v9+ | Controls, HTML overlays, text | ✅ |
+| **State** | Zustand | v4+ | Lightweight state management | ✅ |
+| **Styling** | Lucide React + CSS | Latest | Icons and styling | ✅ |
+| **Backend** | FastAPI | 0.115+ | Python API server | ✅ |
+| **ONNX Parsing** | onnx + onnxruntime | 1.17+ / 1.19+ | Model parsing | ✅ |
+| **PyTorch Support** | torch + torchinfo | 2.x | .pt file loading | 🚧 |
+| **Keras Support** | keras + h5py | 3.x | .h5/.keras parsing | 🚧 |
+| **Export** | reportlab + trimesh | Latest | PDF + GLB export | 🚧 |
 
 ### 13.4 Key Design Decisions
 
@@ -2002,28 +2005,38 @@ class ModelGraph(BaseModel):
 
 ### Python (Backend)
 
+> **Note:** The versions below are research recommendations. See `requirements.txt` for the actual pinned versions used in the project.
+
 ```
-fastapi==0.138.0
+fastapi>=0.115.0
 uvicorn[standard]
 python-multipart
 onnx>=1.17.0
-onnx-tool>=1.0.0
-onnxruntime>=1.21.0
+onnxruntime>=1.19.0
 numpy
-torch>=2.0.0  # for .pt support
-keras>=3.0.0  # for .keras support
-h5py  # for .h5 support
+pydantic>=2.9.0
+pyyaml>=6.0.0
+trimesh>=4.4.0   # GLB export
+reportlab>=4.2.0  # PDF export
+
+# Optional (for additional parsers)
+# torch>=2.0.0    # for .pt support
+# keras>=3.0.0    # for .keras support
+# h5py            # for .h5 support
 ```
 
 ### JavaScript (Frontend)
 
+> **Note:** The versions below are research recommendations. See `frontend/package.json` for the actual pinned versions used in the project.
+
 ```
 react>=18.3.0
-three>=0.175.0
-@react-three/fiber>=9.0.0
-@react-three/drei>=10.0.0
-zustand  # state management
-tailwindcss  # styling
+three>=0.169.0
+@react-three/fiber>=8.17.0
+@react-three/drei>=9.114.0
+zustand>=4.5.0
+axios>=1.7.0
+lucide-react>=0.400.0
 ```
 
 ## Appendix B: Operator Count by Category (ONNX opset 21)

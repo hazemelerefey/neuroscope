@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| **Name** | Omar |
+| **Name** | Amr Mahmoud |
 | **Role** | Backend Developer |
 | **Responsibilities** | FastAPI application setup, API route development (upload, analyze, export, compare), request/response models, error handling, Docker containerization, deployment infrastructure, CI/CD pipeline, and backend testing |
 
@@ -55,7 +55,7 @@ This project requires five distinct skill sets that map directly to the team:
 | Project Component | Skill Needed | Assigned To |
 |---|---|---|
 | **System Architecture + DL Engine** | Python + deep learning + ONNX | Hazem (Technical Lead) |
-| **Backend API + Deployment** | Python + FastAPI + Docker | Omar (Backend) |
+| **Backend API + Deployment** | Python + FastAPI + Docker | Amr (Backend) |
 | **3D Visualization + UI** | React + Three.js + CSS | Shahd (Frontend) |
 | **DL Research + Educational Content** | Deep learning + writing + Arabic | Yomna (Research) |
 | **Data + Testing + QA** | Data preparation + testing | Yossef (Data/QA) |

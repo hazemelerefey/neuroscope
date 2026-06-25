@@ -1,28 +1,53 @@
-# NeuroScope Docker Compose
-version: "3.9"
-
+# NeuroScope Docker Compose — Development
 services:
   backend:
     build:
       context: .
       dockerfile: docker/Dockerfile.backend
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./data:/app/data
       - ./config:/app/config
+    env_file:
+      - .env
     environment:
-      - ENVIRONMENT=development
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
     restart: unless-stopped
+    networks:
+      - neuroscope
 
   frontend:
     build:
       context: ./frontend
       dockerfile: ../docker/Dockerfile.frontend
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
-      - VITE_API_URL=http://backend:8000
+      - VITE_API_URL=${VITE_API_URL:-http://backend:8000}
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.5"
     restart: unless-stopped
+    networks:
+      - neuroscope
+
+networks:
+  neuroscope:
+    driver: bridge

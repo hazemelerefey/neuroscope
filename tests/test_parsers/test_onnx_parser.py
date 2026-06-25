@@ -10,6 +10,7 @@ import tempfile
 onnx = pytest.importorskip("onnx")
 
 from src.parsers.onnx_parser import ONNXParser
+from src.parsers import BaseParser
 from src.graph import NeuroScopeGraph
 
 

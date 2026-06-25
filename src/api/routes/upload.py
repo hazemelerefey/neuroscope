@@ -9,14 +9,17 @@ from typing import Optional
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from pydantic import BaseModel
 
+from src.parsers import get_all_parsers
 from src.parsers.onnx_parser import ONNXParser
 from src.graph import NeuroScopeGraph
-from src.api.routes.analyze import graph_store
+from src.store import graph_store
 
 router = APIRouter()
 
-# Parser registry
-PARSERS = [ONNXParser()]
+
+def _get_parsers():
+    """Get all available parsers (lazy to avoid import errors at module load)."""
+    return get_all_parsers()
 
 
 class UploadResponse(BaseModel):
@@ -68,7 +71,7 @@ async def upload_model(file: UploadFile = File(...)):
             os.unlink(tmp_path)
 
     # Store graph in shared store for analyze/export routes
-    graph_store[graph.model_name] = graph
+    graph_store.put(graph.model_name, graph)
 
     # Serialize graph for frontend
     graph_json = _serialize_graph(graph)
@@ -86,11 +89,10 @@ async def upload_model(file: UploadFile = File(...)):
 
 def _parse_model(file_path: str) -> NeuroScopeGraph:
     """Parse a model file using the appropriate parser."""
-    for parser in PARSERS:
+    for parser in _get_parsers():
         if parser.supports(file_path):
             return parser.parse(file_path)
 
-    # Try ONNX as fallback for unknown formats
     raise ValueError(f"No parser found for file: {file_path}")
 
 

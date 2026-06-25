@@ -10,16 +10,20 @@ onnxruntime==1.19.0
 protobuf==5.28.0
 
 # PyTorch (optional, for .pt files)
-# torch>=2.0.0
+torch>=2.0.0
 # torchinfo>=1.8.0
 
 # Keras/TensorFlow (optional, for .h5 files)
 # tensorflow>=2.15.0
 
+# TFLite support
+flatbuffers>=24.3.25
+
 # Export
 trimesh==4.4.0          # GLB/GLTF export
 reportlab==4.2.0        # PDF export
 pyyaml==6.0.2           # Config files
+matplotlib>=3.7.0       # PNG export
 
 # Utilities
 numpy==1.26.4

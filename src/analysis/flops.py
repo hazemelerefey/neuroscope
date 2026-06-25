@@ -25,11 +25,17 @@ def _calculate_layer_flops(node: LayerNode) -> int:
     """Calculate FLOPs for a single layer."""
     op = node.op_type
 
-    if not node.input_shapes or not node.output_shapes:
-        return 0
-
     input_shape = node.input_shapes[0] if node.input_shapes else []
     output_shape = node.output_shapes[0] if node.output_shapes else []
+
+    # For ops that only need output shape, skip the empty-input guard
+    output_only_ops = {
+        "Relu", "LeakyRelu", "Gelu", "Silu", "Sigmoid", "Tanh",
+        "Softmax", "Elu", "Selu", "Mish", "Hardswish", "PRelu",
+        "Dropout",
+    }
+    if op not in output_only_ops and (not input_shape or not output_shape):
+        return 0
 
     if op in ("Conv", "ConvTranspose"):
         return _conv_flops(node, input_shape, output_shape)
@@ -38,11 +44,11 @@ def _calculate_layer_flops(node: LayerNode) -> int:
     elif op in ("BatchNormalization", "LayerNormalization", "InstanceNormalization", "GroupNormalization"):
         return _norm_flops(input_shape)
     elif op in ("MaxPool", "AveragePool"):
-        return _pool_flops(input_shape, output_shape)
+        return _pool_flops(input_shape, output_shape, node.attributes.get("kernel_shape"))
     elif op in ("GlobalAveragePool", "GlobalMaxPool"):
         return _global_pool_flops(input_shape)
     elif op in ("Relu", "LeakyRelu", "Gelu", "Silu", "Sigmoid", "Tanh"):
-        return _activation_flops(input_shape)
+        return _activation_flops(input_shape or output_shape)
     elif op in ("LSTM", "GRU", "RNN"):
         return _rnn_flops(node, input_shape, output_shape)
     else:
@@ -92,10 +98,25 @@ def _norm_flops(input_shape: list) -> int:
     return 4 * _product(input_shape)
 
 
-def _pool_flops(input_shape: list, output_shape: list) -> int:
-    """FLOPs for pooling: comparison/averaging per output element."""
-    kernel = [2, 2]  # Typical kernel size
-    return _product(output_shape) * kernel[0] * kernel[1]
+def _pool_flops(input_shape: list, output_shape: list, kernel_shape: list = None) -> int:
+    """
+    FLOPs for pooling: comparison/averaging per output element.
+
+    Args:
+        input_shape: Input tensor shape.
+        output_shape: Output tensor shape.
+        kernel_shape: Pooling kernel size. If None, estimated from
+            input/output spatial ratio.
+    """
+    if kernel_shape and len(kernel_shape) >= 2:
+        k_h, k_w = kernel_shape[0], kernel_shape[1]
+    elif len(input_shape) >= 4 and len(output_shape) >= 4 and output_shape[2] > 0 and output_shape[3] > 0:
+        # Estimate kernel from input/output spatial ratio
+        k_h = max(1, input_shape[2] // output_shape[2]) if len(input_shape) > 2 else 2
+        k_w = max(1, input_shape[3] // output_shape[3]) if len(input_shape) > 3 else k_h
+    else:
+        k_h, k_w = 2, 2
+    return _product(output_shape) * k_h * k_w
 
 
 def _global_pool_flops(input_shape: list) -> int:

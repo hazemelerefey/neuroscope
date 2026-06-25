@@ -1,354 +1,174 @@
-# NeuroScope — Unique Advantages & Technical Proof
+# NeuroScope — Unique Advantages & Technical Differentiators
 
-> **Document Purpose:** Comprehensive description of NeuroScope's unique features, technical feasibility proof, and deliverable types for the AYAIR 2026 competition submission.
+> **Document Purpose:** Honest description of NeuroScope's implemented capabilities, technical differentiators, and roadmap for the AYAIR 2026 competition submission.
 
 ---
 
 ## 🎯 The Core Vision
 
-NeuroScope is NOT just another model visualizer. It's a **real-time, interactive, code-to-3D ML education platform** that transforms how students understand deep learning.
+NeuroScope is a **web-based 3D neural network architecture visualizer and analyzer** that helps ML students understand, debug, and improve their models. Unlike existing tools that show static diagrams, NeuroScope combines interactive 3D visualization with automated architecture analysis.
 
-**The breakthrough idea:** Your code IS the 3D model. Every code block is a 3D component. Edit the code → the 3D changes instantly. Click the 3D → see the code. Run the code → watch data flow through the model like a simulation.
+**The key insight:** Upload a model file → see it in 3D → understand what's wrong with it → learn why it matters.
 
 ---
 
-## 🏆 7 Unique Advantages (No Other Tool Has These)
+## ✅ What's Implemented Today
 
-### Advantage 1: Code-to-3D Mapping (The "Code IS the Model" Concept)
+### Advantage 1: Interactive 3D Architecture Visualization
 
 **What it does:**
-When a student writes or uploads code (Python script or Jupyter notebook), NeuroScope parses the code and generates a 3D visualization where **each code block maps to a 3D component**. Clicking a Conv2d layer in the 3D view highlights the exact code line that created it. Clicking the code highlights the corresponding 3D layer.
+Upload an ONNX model file and see the neural network rendered as an interactive 3D scene in the browser. Each layer type maps to a distinct 3D shape — convolution layers are boxes, pooling layers are smaller cubes, activations are spheres, normalization layers are thin slabs, and so on. Click any layer to see its parameters, shapes, and computational cost.
 
 **Why it's unique:**
-- Netron: Shows model architecture, but no connection to source code
-- TensorBoard: Shows computation graph, but no code mapping
-- modelviz: Shows 3D visualization, but requires Python code inline, no code highlighting
-- **NeuroScope: The ONLY tool that maps code ↔ 3D bidirectionally**
+- **Netron:** Shows 2D static diagrams — flat and non-interactive
+- **TensorBoard:** Shows computation graph but no 3D visualization
+- **modelviz:** 3D visualization exists but only in Jupyter notebooks, requires Python code inline
+- **NeuroScope:** Browser-based interactive 3D visualization from a model file upload — no code required
 
-**Technical proof:**
-```
-Python AST (Abstract Syntax Tree) parsing:
-- Parse code with `ast` module
-- Identify nn.Module definitions, layer instantiations, forward() methods
-- Map each AST node → graph node → 3D component
-- Store line numbers for bidirectional highlighting
-
-Jupyter notebook parsing:
-- Read .ipynb JSON structure
-- Extract code cells
-- Parse each cell's AST
-- Map cell index + line number → 3D component
-```
-
-**How it works:**
-```python
-# Student's code:
-class CNN(nn.Module):
-    def __init__(self):                    # ← Module definition
-        super().__init__()
-        self.conv1 = nn.Conv2d(3, 64, 3)  # ← Maps to 3D Box #1
-        self.bn1 = nn.BatchNorm2d(64)      # ← Maps to 3D Slab #2
-        self.relu = nn.ReLU()              # ← Maps to 3D Sphere #3
-        self.pool = nn.MaxPool2d(2)        # ← Maps to 3D Cube #4
-
-# In the 3D view:
-# Click "3D Box #1" → highlights line 4: self.conv1 = nn.Conv2d(3, 64, 3)
-# Click line 7: self.pool = nn.MaxPool2d(2) → highlights "3D Cube #4"
-```
+**Technical implementation:**
+- React + Three.js (via @react-three/fiber) for 3D rendering
+- Layer type → 3D shape mapping defined in `config/layer_shapes.yaml`
+- Color-coded by layer category (convolution, pooling, activation, etc.)
+- Orbit controls for camera navigation
+- Click-to-select with detailed parameter panel
 
 ---
 
-### Advantage 2: Real-Time 3D Simulation (Edit Code → See 3D Change Instantly)
+### Advantage 2: Architecture Health Check Engine (ML Linter)
 
 **What it does:**
-When a student edits ANY parameter in their code (e.g., changes `nn.Conv2d(3, 64, 3)` to `nn.Conv2d(3, 128, 3)`), the 3D visualization updates **instantly** — before running the code. The 3D box for that Conv layer doubles in size because 128 > 64 channels. The total parameter count updates. The FLOPs estimate updates. The architecture linter re-runs.
+Automated detection of common neural network architecture anti-patterns across 11 rules in three categories:
+
+| Category | Rules | Examples |
+|----------|-------|----------|
+| **Layer-Level** | 4 rules | Missing activation between linear layers, sigmoid in deep networks, batch norm placement, activation after final layer |
+| **Architecture-Level** | 4 rules | Missing skip connections in deep nets, FC parameter explosion, missing dropout, premature flattening |
+| **Efficiency** | 3 rules | Redundant consecutive convolutions, oversized kernels, missing pooling after convolutions |
+
+Each finding includes severity (Critical/Warning/Info), a human-readable explanation of *why* it's a problem, and a suggested fix.
 
 **Why it's unique:**
-- No existing tool does real-time 3D preview of code changes
-- Students see the impact of parameter changes **before running training**
-- This is like "live preview" for web development, but for ML architectures
+- **No existing tool** combines visualization with automated architecture analysis
+- It's like ESLint for neural networks — catches common mistakes before training
+- Students learn *why* their architecture is problematic, not just *that* it is
 
-**Technical proof:**
-```
-VS Code Extension Architecture:
-1. VS Code Extension API provides document change events
-2. On every keystroke (debounced 300ms):
-   a. Parse the code with AST
-   b. Extract layer definitions + parameters
-   c. Build intermediate graph representation
-   d. Send graph data to WebView (Three.js)
-   e. Three.js updates 3D scene with smooth transitions
-3. Total latency: <500ms for typical models
-
-Implementation:
-- VS Code Extension API: `workspace.onDidChangeTextDocument`
-- WebView API: `window.webview.postMessage` for extension → 3D communication
-- Three.js: GSAP or Tween.js for smooth 3D transitions
-- AST parsing: Python `ast` module (runs in backend) or Tree-sitter (runs in extension)
-```
+**Technical implementation:**
+- Rules engine with graph pattern matching
+- Each rule is a pure function: `NeuroScopeGraph → list[Finding]`
+- Rules based on published ML best practices (Goodfellow, Chollet, fast.ai)
+- Configurable thresholds via `config/analysis_rules.yaml`
 
 ---
 
-### Advantage 3: Forward Pass Animation (Data Flow Simulation)
+### Advantage 3: FLOPs & Memory Estimation
 
 **What it does:**
-When the student runs their code, NeuroScope shows an **animated simulation** of data flowing through the network:
-- Input tensor enters the first layer (animated particle flow)
-- Each layer processes the data (tensor shape changes visually)
-- Feature maps are shown as 3D volumes that change size at each layer
-- Activations light up as data passes through
-- Final output appears at the end
+Per-layer computation cost (FLOPs) and memory footprint estimation for any ONNX model. Shows total FLOPs, parameter counts, weight memory (FP32 and native precision), activation memory, and peak memory estimates.
 
 **Why it's unique:**
-- TensorFlow Playground: Shows data flow but only for toy feedforward networks
-- CNN Explainer: Shows feature maps but only for pre-built CNNs
-- **NeuroScope: Shows data flow for ANY model the student builds, animated in 3D**
+- modelviz: FLOPs calculation is on their roadmap but not implemented
+- Netron: Shows parameters but no FLOPs or memory estimates
+- TensorBoard: Shows some profiling but requires running the model
+- **NeuroScope: Estimates FLOPs and memory from the model file alone — no GPU or execution needed**
 
-**Technical proof:**
-```
-Forward Pass Capture:
-1. Register forward hooks on each PyTorch module (same as modelviz)
-2. Run a forward pass with sample input
-3. Capture: input tensor, output tensor, intermediate activations per layer
-4. Send captured data to frontend as animation keyframes
-5. Three.js animates particles along edges, with size/color reflecting tensor values
-
-Animation System:
-- Particles flow along edge paths (Bezier curves)
-- Particle speed = processing time per layer
-- Particle size = tensor magnitude
-- Layer glow intensity = activation strength
-- Tensor shape displayed as 3D volume that morphs at each layer
-```
+**Technical implementation:**
+- FLOPs calculator handles Conv, MatMul/Gemm, BatchNorm, pooling, activation, and LSTM layers
+- Memory estimator accounts for weights (native + FP32), activations, and peak memory
+- Hardware-aware presets for common GPUs (T4, V100, A100, RTX3090, RTX4090, CPU)
 
 ---
 
-### Advantage 4: VS Code Extension (Real-Time Development Integration)
+### Advantage 4: Educational Layer Descriptions
 
 **What it does:**
-A VS Code extension that:
-- Reads the student's Python script or Jupyter notebook in real-time
-- Displays a 3D model of the architecture in a side panel
-- Highlights 3D components when the cursor is on a code line
-- Highlights code lines when a 3D component is clicked
-- Updates the 3D model as the student types (before running)
-- Shows the forward pass animation when the student runs the code
-- Displays architecture warnings inline in the code (like a linter)
-
-**Why it's unique:**
-- No ML tool exists as a VS Code extension with real-time 3D visualization
-- This integrates into the student's existing workflow (no context switching)
-- It's like having an ML expert looking over their shoulder
-
-**Technical proof:**
-```
-VS Code Extension Components:
-1. Extension Host (TypeScript):
-   - Registers WebView provider
-   - Listens to document changes
-   - Sends code to backend for parsing
-   - Receives graph data and forwards to WebView
-
-2. WebView (React + Three.js):
-   - Renders 3D visualization
-   - Receives messages from extension host
-   - Sends click events back for code highlighting
-
-3. Language Server Protocol (LSP) (optional):
-   - Provides inline diagnostics (warnings)
-   - Code actions (quick fixes)
-   - Hover information (layer descriptions)
-
-Communication Flow:
-Code Change → Extension Host → Backend API → Graph Data → WebView → 3D Update
-3D Click → WebView → Extension Host → VS Code Editor → Highlight Lines
-```
-
----
-
-### Advantage 5: Architecture Health Check (ML Linter)
-
-**What it does:**
-Automated detection of 47+ common ML architecture anti-patterns with severity levels (Critical/Warning/Info) and suggested fixes. Runs in real-time as the student types.
-
-**Why it's unique:**
-- No tool combines visualization + automated analysis + code mapping
-- It's like ESLint/SonarQube but for neural network architectures
-- Students learn WHY their architecture is wrong, not just THAT it's wrong
-
-**Technical proof:**
-```
-Rule Engine Architecture:
-1. Parse model graph (from code or ONNX file)
-2. Run graph through rules pipeline:
-   - Layer-level rules (8): missing activation, sigmoid in deep nets, BN placement
-   - Architecture-level rules (7): no skip connections, FC explosion, missing dropout
-   - Efficiency rules (5): redundant layers, large kernels, no pooling
-   - Task-specific rules (18): CNN/RNN/Transformer/GAN anti-patterns
-3. Each rule produces Finding objects with: severity, message, fix, affected layers
-4. Findings map to 3D components (highlight problem layers in red/yellow)
-5. Findings also show as inline diagnostics in VS Code
-
-Implementation:
-- Rules are pure functions: graph → list[Finding]
-- Easy to add new rules (just add a method)
-- Rules are configurable via YAML (thresholds, enable/disable)
-- Results cached until graph changes
-```
-
----
-
-### Advantage 6: Educational Layer Descriptions (Learn While Building)
-
-**What it does:**
-Every layer in the 3D view has an educational description that explains:
-- What this layer does (in plain language)
-- Why it's used here
-- Common mistakes with this layer
-- How it connects to adjacent layers
+Every layer in the 3D view has an educational description explaining what the layer does in plain language, why it's commonly used, and common mistakes associated with it. Descriptions are context-aware — a Conv2d near the input is described differently from one deep in the network.
 
 **Why it's unique:**
 - Netron: Shows parameters but no explanation
 - TensorBoard: Shows graph but no education
 - **NeuroScope: Every component has a "What does this do?" explanation**
 
-**Technical proof:**
-```
-Layer Description Database:
-- Pre-defined descriptions for 50+ layer types
-- Context-aware: description changes based on position in network
-- Example: Conv2d after Input → "Extracts low-level features (edges, textures)"
-- Example: Conv2d after 3 other Conv2d → "Extracts high-level features (shapes, objects)"
-- Available in multiple languages (en, fr, ar, sw, pt)
-```
+**Technical implementation:**
+- Pre-defined descriptions in `config/languages/en.json` for common layer types
+- i18n architecture ready for multi-language support (currently English only)
 
 ---
 
-### Advantage 7: Multi-Format, Multi-Language, Multi-Device
+### Advantage 5: ONNX Support with Extensible Parser Architecture
 
 **What it does:**
-- **Multi-format:** Supports ONNX, PyTorch, Keras, TensorFlow Lite, and raw Python code
-- **Multi-language:** Interface in English, French, Arabic, Swahili, Portuguese
-- **Multi-device:** Web app works on desktop, tablet, phone; VS Code extension for developers; offline PWA for low-connectivity areas
+Parses ONNX model files to extract the full computation graph — every operator, its inputs/outputs, attributes, weight shapes, and connections. The parser handles shape inference, weight extraction, and edge construction automatically.
 
-**Why it's unique:**
-- Every existing tool is English-only and desktop-only
-- NeuroScope is the first ML education tool designed for Africa's constraints
+**Why it matters:**
+- ONNX is the universal interchange format — PyTorch, TensorFlow, Keras, and most frameworks can export to ONNX
+- One parser covers models from many frameworks
+- The parser architecture is designed to be extensible for additional formats
 
-**Technical proof:**
-```
-i18n: JSON language files loaded at runtime, React i18next
-PWA: Service Worker caches all assets, works offline after first load
-Responsive: CSS media queries + Three.js canvas resizes automatically
-```
+**Technical implementation:**
+- Built on the `onnx` Python library (v1.17.0)
+- Full protobuf schema parsing: nodes, edges, initializers, value_info
+- Shape inference via `onnx.shape_inference`
+- Produces a unified `NeuroScopeGraph` intermediate representation
 
 ---
 
-## 📦 Deliverable Types
+### Advantage 6: Full-Stack Web Application
 
-### Deliverable 1: Web Application (Primary)
+**What it does:**
+A complete web application with FastAPI backend and React + Three.js frontend. Upload a model, see it in 3D, run analysis, and review findings — all in the browser. Docker setup included for easy deployment.
 
-**What:** A browser-based tool where students upload model files or paste code and get instant 3D visualization + analysis.
-
-**Tech:** React + Three.js frontend, FastAPI + ONNX backend
-
-**Access:** URL (hosted on Vercel/Railway) — no installation needed
-
-**Use case:** Students who want to quickly visualize and analyze a model without installing anything.
+**Technical stack:**
+- **Backend:** FastAPI + ONNX + NumPy
+- **Frontend:** React 18 + Three.js (@react-three/fiber) + Zustand
+- **Deployment:** Docker Compose with separate backend and frontend containers
 
 ---
 
-### Deliverable 2: VS Code Extension (Advanced)
+## 🗺️ Roadmap (Planned, Not Yet Implemented)
 
-**What:** A VS Code extension that provides real-time 3D visualization alongside the student's code.
+The following features are in active development or planned for future releases. They are **not claimed as implemented** — they represent our development roadmap.
 
-**Tech:** VS Code Extension API + WebView (React + Three.js) + Python backend
+### In Active Development
 
-**Access:** Install from VS Code Marketplace
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **PyTorch Parser** | 🚧 Building | Parse `.pt`/`.pth` files by converting to ONNX internally |
+| **Keras Parser** | 🚧 Building | Parse `.h5`/`.keras` files by extracting architecture config |
+| **TFLite Parser** | 🚧 Building | Parse `.tflite` files for mobile/edge models |
+| **Compare API** | 🚧 Building | Side-by-side architecture comparison of two models |
+| **Export API** | 🚧 Building | Export analysis reports as Markdown, PDF, and GLB |
 
-**Use case:** ML developers who want real-time architecture feedback while coding.
+### Planned
 
----
-
-### Deliverable 3: Jupyter Notebook Widget (Educational)
-
-**What:** A Jupyter widget that shows 3D visualization inline in notebooks.
-
-**Tech:** ipywidgets + Three.js (embedded)
-
-**Access:** `pip install neuroscope` → `from neuroscope import visualize` → `visualize(model)`
-
-**Use case:** Teachers who want to demonstrate architectures in live coding sessions.
-
----
-
-### Deliverable 4: CLI Tool (Developer)
-
-**What:** Command-line tool that analyzes model files and generates reports.
-
-**Tech:** Python CLI (click/typer)
-
-**Access:** `pip install neuroscope` → `neuroscope analyze model.onnx --output report.pdf`
-
-**Use case:** CI/CD pipelines, batch analysis, automated documentation.
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **VS Code Extension** | 📋 Planned | Real-time 3D visualization in VS Code side panel |
+| **Forward Pass Animation** | 📋 Planned | Animated data flow simulation through the network |
+| **Code-to-3D Mapping** | 📋 Planned | Bidirectional mapping between Python code and 3D layers |
+| **Multilingual Support** | 📋 Planned | French, Arabic, Swahili, Portuguese (i18n architecture ready) |
+| **Offline PWA** | 📋 Planned | Service Worker caching for low-connectivity environments |
+| **Layer Grouping** | 📋 Planned | Merge Conv+BN+ReLU patterns for cleaner visualization |
+| **Model Card Generation** | 📋 Planned | Auto-generated model documentation |
+| **Jupyter Widget** | 📋 Planned | Inline 3D visualization in Jupyter notebooks |
+| **CLI Tool** | 📋 Planned | Command-line analysis for CI/CD pipelines |
 
 ---
 
-### Deliverable 5: API Service (Integration)
+## 📊 Comparison with Existing Tools
 
-**What:** REST API that accepts model files and returns analysis results.
+| Feature | Netron | TensorBoard | modelviz | **NeuroScope** |
+|---------|--------|-------------|----------|----------------|
+| **3D Visualization** | ❌ | ❌ | ✅ Jupyter only | ✅ **Browser-based** |
+| **Architecture Linter** | ❌ | ❌ | ❌ | ✅ **11 rules** |
+| **FLOPs Estimation** | ❌ | ❌ | ❌ Roadmap | ✅ **Per-layer** |
+| **Memory Estimation** | ❌ | ❌ | ❌ | ✅ **Detailed** |
+| **File Upload** | ✅ | ❌ | ❌ Code only | ✅ **Drag & drop** |
+| **Educational Content** | ❌ | ❌ | ❌ | ✅ **Layer descriptions** |
+| **Web App** | ✅ | ✅ | ❌ Jupyter only | ✅ **Full stack** |
+| **Docker Deployment** | ❌ | ❌ | ❌ | ✅ **Docker Compose** |
+| **Free & Open Source** | ✅ | ✅ | ✅ | ✅ **MIT License** |
 
-**Tech:** FastAPI (already built)
-
-**Access:** `POST /api/upload` + `POST /api/analyze`
-
-**Use case:** Integration into other tools, platforms, or educational systems.
-
----
-
-## 🔬 Technical Feasibility Proof
-
-### Claim 1: "Real-time 3D updates from code changes"
-
-**Proof:**
-- VS Code Extension API fires `onDidChangeTextDocument` on every keystroke
-- Python AST parsing takes <50ms for typical ML scripts (~500 lines)
-- Three.js scene update takes <16ms (60fps)
-- Total latency: <100ms from keystroke to 3D update
-- **This is proven technology** — VS Code extensions like "Live Server" and "GitLens" do real-time updates
-
-### Claim 2: "Bidirectional code ↔ 3D mapping"
-
-**Proof:**
-- AST parsing extracts line numbers for each node definition
-- Three.js raycasting detects clicks on 3D objects
-- VS Code API `editor.setSelection()` highlights code lines
-- WebView `postMessage` sends click events between extension and 3D view
-- **This is proven technology** — VS Code's debugger does code ↔ UI mapping
-
-### Claim 3: "Forward pass animation"
-
-**Proof:**
-- PyTorch forward hooks capture tensors at each layer (proven by modelviz, torchinfo)
-- Three.js particle systems animate along paths (proven by thousands of Three.js demos)
-- Tensor shapes map to 3D volume sizes (simple scaling)
-- **This is proven technology** — CNN Explainer does this for one hardcoded model; NeuroScope does it for ANY model
-
-### Claim 4: "47+ architecture anti-patterns"
-
-**Proof:**
-- Rules are graph pattern matching (proven by linters like ESLint, Pylint)
-- Each rule is a pure function: `graph → list[Finding]`
-- Rules are based on published ML best practices (Goodfellow, Chollet, fast.ai)
-- **This is proven technology** — software linters have existed for 40+ years
-
-### Claim 5: "Works offline / low bandwidth"
-
-**Proof:**
-- PWA with Service Worker caches all assets (proven by millions of PWAs)
-- Three.js runs entirely client-side (no server needed for visualization)
-- ONNX parsing can run client-side via protobuf.js (proven by Netron web version)
-- **This is proven technology** — PWAs work offline by design
+*Note: We only claim advantages that are implemented and verifiable. Features on our roadmap are listed separately above.*
 
 ---
 
@@ -356,49 +176,28 @@ Responsive: CSS media queries + Three.js canvas resizes automatically
 
 | Challenge | How NeuroScope Addresses It |
 |-----------|----------------------------|
-| **No ML mentors** | Automated architecture analysis replaces senior engineer review |
-| **English-only tools** | Multilingual interface (FR, AR, SW, PT) |
-| **No GPU** | Browser-based, runs on any device |
-| **Low internet** | Offline PWA, works after first load |
-| **Expensive tools** | Free and open source |
-| **Theory-practice gap** | Code ↔ 3D mapping bridges abstract concepts and visual understanding |
-| **Copy-paste culture** | Students understand WHAT each code block does by seeing it in 3D |
-
----
-
-## 📊 Comparison with ALL Existing Tools
-
-| Feature | Netron | TensorBoard | modelviz | TF Playground | CNN Explainer | **NeuroScope** |
-|---------|--------|-------------|----------|---------------|---------------|----------------|
-| 3D Visualization | ❌ | ❌ | ✅ Jupyter | ❌ | ❌ | ✅ **Web + VS Code** |
-| Code ↔ 3D Mapping | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ **Bidirectional** |
-| Real-time Updates | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ **On keystroke** |
-| Forward Pass Animation | ❌ | ❌ | ❌ | ✅ Toy only | ✅ One model | ✅ **Any model** |
-| Architecture Linter | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ **47+ rules** |
-| FLOPs/Memory | ❌ | ❌ | ❌ On roadmap | ❌ | ❌ | ✅ **Per-layer** |
-| File Upload | ✅ | ❌ | ❌ Code only | ❌ | ❌ | ✅ **Files + Code** |
-| VS Code Extension | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ **Real-time** |
-| Offline/PWA | Desktop only | ❌ | ❌ | ❌ | ❌ | ✅ **PWA** |
-| Multilingual | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ **5 languages** |
-| Model Comparison | ❌ | ❌ | ❌ Roadmap | ❌ | ❌ | ✅ **Side-by-side** |
-| Export 3D Model | ❌ SVG only | ❌ | ❌ HTML only | ❌ | ❌ | ✅ **GLB/SVG/PDF/MD** |
-| Educational | ❌ | ❌ | ❌ | ✅ Basic | ✅ Basic | ✅ **Full descriptions** |
+| **No ML mentors** | Automated architecture analysis catches common mistakes |
+| **No GPU** | Browser-based, runs on any device with a web browser |
+| **Expensive tools** | Free and open source (MIT License) |
+| **Theory-practice gap** | 3D visualization bridges abstract concepts and visual understanding |
+| **Copy-paste culture** | Students understand WHAT each layer does through educational descriptions |
 
 ---
 
 ## 🎯 Summary for Competition Judges
 
-**NeuroScope is the FIRST tool that:**
+**NeuroScope today provides:**
 
-1. Maps code ↔ 3D architecture bidirectionally (click code → see 3D, click 3D → see code)
-2. Updates 3D visualization in real-time as students type (before running)
-3. Animates data flow through ANY model (not just toy examples)
-4. Detects 47+ architecture anti-patterns automatically (ML linter)
-5. Works as a VS Code extension (integrated into developer workflow)
-6. Works offline in low-connectivity African environments (PWA)
-7. Supports 5 languages (EN, FR, AR, SW, PT)
+1. **Interactive 3D visualization** of neural network architectures from ONNX model files
+2. **Automated architecture analysis** with 11 rules detecting common anti-patterns
+3. **FLOPs and memory estimation** per-layer and total, without needing GPU execution
+4. **Educational layer descriptions** that explain what each component does
+5. **Full-stack web application** with Docker deployment, ready for students to use
 
-**This is not an incremental improvement. This is a paradigm shift in how ML is taught and learned.**
+**What makes it different from existing tools:**
+NeuroScope is the first tool that combines 3D visualization with automated architecture analysis and educational content — all in a browser-based, freely accessible package.
+
+**Our roadmap** includes PyTorch/Keras/TFLite parsers, model comparison, export features, and multilingual support — but we are transparent that these are in development, not yet shipped.
 
 ---
 

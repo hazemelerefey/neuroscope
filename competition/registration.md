@@ -4,36 +4,34 @@
 
 | Field | Value |
 |-------|-------|
-| **First Name** | `[YOUR NAME]` |
-| **Last Name** | `[YOUR NAME]` |
-| **Date of Birth** | `[DD/MM/YYYY]` — must be 15-35 years old |
-| **Email** | `[YOUR EMAIL]` |
-| **Nationality** | `[YOUR COUNTRY]` |
-| **Address** | `[FULL ADDRESS]` |
-| **Nature of Submission** | `Individual Project` or `Group Project` |
-| **Phone** | `[AREA CODE + NUMBER]` |
+| **First Name** | Hazem Khaled |
+| **Last Name** | Ezzat Abdel Halim |
+| **Date of Birth** | [FILL: DD/MM/YYYY] — must be 15-35 years old |
+| **Email** | [FILL: email] |
+| **Nationality** | Egyptian |
+| **Address** | [FILL: full address] |
+| **Nature of Submission** | ☑ **Group Project** (5 members) |
+| **Phone** | [FILL: area code + number] |
 | **Award Category** | **Education Enhancement** |
-| **Project Name** | **`[TO BE DECIDED]`** |
+| **Project Name** | **NeuroScope** |
 | **Project Introduction Essay** | 📄 PDF file — 800 words max, no plagiarism |
 
 ---
 
 ## Team Members
 
-### If Individual:
-| Role | Name | Email |
-|------|------|-------|
-| Lead / Sole Participant | `[YOUR NAME]` | `[YOUR EMAIL]` |
+### Group Project — DigiNeurons (5 Members)
 
-### If Group:
-| Role | Name | Email | Institution |
-|------|------|-------|-------------|
-| Group Leader | `[NAME]` | `[EMAIL]` | `[INSTITUTION]` |
-| Member 2 | `[NAME]` | `[EMAIL]` | `[INSTITUTION]` |
-| Member 3 | `[NAME]` | `[EMAIL]` | `[INSTITUTION]` |
+| # | Role | Name | Email | Institution |
+|---|------|------|-------|-------------|
+| 1 | **Group Leader** · Technical Lead & ML/DL Engineer | Hazem Khaled Ezzat Abdel Halim | [FILL: email] | [FILL: institution] |
+| 2 | Backend Developer | Amr Mahmoud | [FILL: email] | [FILL: institution] |
+| 3 | Frontend Developer | Shahd Khairy | [FILL: email] | [FILL: institution] |
+| 4 | DL/ML Research Analyst | Yomna Ashraf | [FILL: email] | [FILL: institution] |
+| 5 | Data Analyst & QA | Yossef Sharif | [FILL: email] | [FILL: institution] |
 
-> ⚠️ Group entries: project paper must list ALL team members.
-> Only group leader submits the form.
+> ⚠️ Only the group leader (Hazem Khaled) submits the Jotform.
+> The project essay lists all five team members.
 
 ---
 
@@ -46,8 +44,8 @@
 **Why this fits:**
 - NeuroScope helps **students** understand ML model architectures visually
 - It helps **educators** teach deep learning with interactive 3D demonstrations
-- It's **inclusive** — free, browser-based, works offline, multilingual
-- It's **sustainable** — open source, community-driven, university partnerships
+- It's **inclusive** — free, browser-based, works offline, multilingual (5 languages)
+- It's **sustainable** — MIT license, open source, community-driven, university partnerships
 - It's **efficient** — automated architecture analysis replaces hours of manual debugging
 
 ---
@@ -56,6 +54,6 @@
 
 - [ ] Submit Jotform by June 30, 2026 21:45 GMT
 - [ ] Save acknowledgement email
-- [ ] Reply to email with full project paper
+- [ ] Reply to email with full project paper (essay_final.md → PDF)
 - [ ] Prepare demo prototype for finals (if selected)
 - [ ] Monitor email + X (@Ele_VateAI) + LinkedIn for finalist announcement (Sep 17)

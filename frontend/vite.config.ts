@@ -7,6 +7,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        // hls.js ships missing .mjs in some versions; alias to CJS entry
+        'hls.js': 'hls.js/dist/hls.js',
+      },
+    },
     server: {
       port: 3000,
       proxy: {

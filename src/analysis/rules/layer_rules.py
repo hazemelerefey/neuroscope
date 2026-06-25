@@ -55,12 +55,12 @@ class LayerRules:
                 current.op_type in LINEAR_OPS | CONV_OPS
                 and next_node.op_type in LINEAR_OPS | CONV_OPS
             ):
-                # Check if there's an activation between them via edges
-                has_activation_between = False
-                for j in range(i + 1, graph.nodes.index(next_node)):
-                    if nodes[j].op_type in ACTIVATION_OPS:
-                        has_activation_between = True
-                        break
+                # Check if there's an activation between them
+                # Use i+1 directly instead of O(n) index lookup
+                has_activation_between = any(
+                    nodes[j].op_type in ACTIVATION_OPS
+                    for j in range(i + 1, i + 1)
+                )
 
                 if not has_activation_between:
                     findings.append(

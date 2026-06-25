@@ -13,31 +13,51 @@
 
 ---
 
+## Submission Sprint (June 25–30, 2026)
+
+| Date | Task | Owner | Status |
+|------|------|-------|--------|
+| **Jun 25** | Finalize essay_final.md (≤800 words) | Hazem + Yomna | ✅ Done |
+| **Jun 25** | Complete registration.md fields | Hazem | ✅ Done |
+| **Jun 25** | Verify team_roster.md accuracy | All | ✅ Done |
+| **Jun 26** | Convert essay to PDF, proofread | Yomna + Yossef | Pending |
+| **Jun 26** | Fill remaining [FILL:] placeholders in registration | Hazem | Pending |
+| **Jun 27** | Final review of all submission documents | All | Pending |
+| **Jun 28** | Submit Jotform (early — avoid last-day rush) | Hazem | Pending |
+| **Jun 29** | Buffer day for corrections | All | Reserved |
+| **Jun 30** | **HARD DEADLINE: 21:45 GMT** — Final fallback submission | Hazem | ⚠️ Deadline |
+
+---
+
 ## Submission Flow
 
 1. **Fill Jotform** → https://form.jotform.com/260073925589568
-   - Personal info + Project Name + Category (Education Enhancement)
-   - Upload: Project Introduction Essay (PDF, 800 words max)
+   - Personal info + Project Name (NeuroScope) + Category (Education Enhancement)
+   - Upload: Project Introduction Essay (PDF, ≤800 words)
 2. **Receive acknowledgement email**
 3. **Reply to email** with full project paper / prototype documentation
 
 ---
 
-## Post-Submission
+## Post-Submission Development (If Selected as Finalist)
 
-- Judges review all submissions
-- Only projects meeting requirements will be contacted
-- Finalists announced Sep 17 via email + social media
-- Must be able to **prove work's concept and originality**
-- Must attend ceremony (virtual or physical) — no response = forfeit prizes
+| Period | Milestone | Key Deliverables |
+|--------|-----------|-----------------|
+| **Jul 2026** | Core parser + basic 3D visualization | ONNX parser, Three.js prototype, basic layer rendering |
+| **Aug 2026** | Architecture linter + export features | 47+ anti-pattern detection, PDF/PNG export, VS Code extension |
+| **Sep 2026** | Polish + deploy | Demo video, PWA deployment, multilingual UI, user testing |
+| **Oct 2026** | Present at ceremony | Live demo, presentation slides, Q&A preparation |
 
 ---
 
-## What to Build Between Submission and Finals
+## Post-Submission Notes
 
-| Period | Milestone |
-|--------|-----------|
-| **Jul 2026** | Core parser (ONNX) + basic 3D visualization |
-| **Aug 2026** | Architecture linter + export features |
-| **Sep 2026** | Polish, demo video, deploy web app |
-| **Oct 2026** | Present at ceremony if selected |
+- Judges review all submissions; only projects meeting requirements will be contacted
+- Finalists announced Sep 17 via email + social media (@Ele_VateAI on X, LinkedIn)
+- Must be able to **prove work's concept and originality**
+- Must attend ceremony (virtual or physical) — no response = forfeit prizes
+- Build a working prototype regardless of finalist status (open-source release)
+
+---
+
+*Last updated: 2026-06-25*
