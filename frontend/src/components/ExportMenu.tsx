@@ -14,11 +14,9 @@ interface ExportOption {
 }
 
 const EXPORT_OPTIONS: ExportOption[] = [
-  { format: 'markdown', label: 'Report (MD)', icon: <FileText size={14} />, enabled: true },
-  { format: 'html', label: '3D Viewer (HTML)', icon: <Globe size={14} />, enabled: true },
-  { format: 'svg', label: 'Diagram (SVG)', icon: <FileText size={14} />, enabled: false },
-  { format: 'glb', label: '3D Model (GLB)', icon: <FileText size={14} />, enabled: false },
-  { format: 'pdf', label: 'Report (PDF)', icon: <FileText size={14} />, enabled: false },
+  { format: 'json', label: 'Full Data (JSON)', icon: <FileText size={14} />, enabled: true },
+  { format: 'summary', label: 'Report (TXT)', icon: <FileText size={14} />, enabled: true },
+  { format: 'png', label: 'Diagram (PNG)', icon: <FileText size={14} />, enabled: true },
 ]
 
 export default function ExportMenu({ modelId }: ExportMenuProps) {

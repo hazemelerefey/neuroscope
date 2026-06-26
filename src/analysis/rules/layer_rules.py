@@ -55,31 +55,25 @@ class LayerRules:
                 current.op_type in LINEAR_OPS | CONV_OPS
                 and next_node.op_type in LINEAR_OPS | CONV_OPS
             ):
-                # Check if there's an activation between them
-                # Use i+1 directly instead of O(n) index lookup
-                has_activation_between = any(
-                    nodes[j].op_type in ACTIVATION_OPS
-                    for j in range(i + 1, i + 1)
-                )
-
-                if not has_activation_between:
-                    findings.append(
-                        Finding(
-                            severity="CRITICAL",
-                            rule_id="LAYER_001",
-                            title="Missing Activation Function",
-                            message=(
-                                f"No activation between '{current.name}' ({current.op_type}) "
-                                f"and '{next_node.name}' ({next_node.op_type}). "
-                                f"Stacking linear layers without activation collapses to a "
-                                f"single linear transformation — the network cannot learn "
-                                f"non-linear decision boundaries."
-                            ),
-                            fix="Add ReLU, GELU, or SiLU activation between the layers.",
-                            layer_ids=[current.id, next_node.id],
-                            category="layer",
-                        )
+                # Consecutive linear/conv layers without activation between them
+                # means the network cannot learn non-linear decision boundaries
+                findings.append(
+                    Finding(
+                        severity="CRITICAL",
+                        rule_id="LAYER_001",
+                        title="Missing Activation Function",
+                        message=(
+                            f"No activation between '{current.name}' ({current.op_type}) "
+                            f"and '{next_node.name}' ({next_node.op_type}). "
+                            f"Stacking linear layers without activation collapses to a "
+                            f"single linear transformation — the network cannot learn "
+                            f"non-linear decision boundaries."
+                        ),
+                        fix="Add ReLU, GELU, or SiLU activation between the layers.",
+                        layer_ids=[current.id, next_node.id],
+                        category="layer",
                     )
+                )
 
         return findings
 
