@@ -2,8 +2,11 @@
 Analyze API Route — Run architecture analysis on uploaded models.
 """
 
-from fastapi import APIRouter, HTTPException
+import re
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from src.graph import NeuroScopeGraph
 from src.analysis import AnalysisEngine
@@ -15,9 +18,21 @@ router = APIRouter()
 
 analysis_engine = AnalysisEngine()
 
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
+# UUID validation pattern
+UUID_PATTERN = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', re.I)
+
 
 class AnalyzeRequest(BaseModel):
-    model_id: str  # ID from upload response
+    model_id: str  # UUID from upload response
+
+    def validate_model_id(self) -> str:
+        """Validate model_id is a proper UUID."""
+        if not UUID_PATTERN.match(self.model_id):
+            raise ValueError("Invalid model_id format. Expected UUID.")
+        return self.model_id
 
 
 class FindingResponse(BaseModel):
@@ -48,7 +63,8 @@ class AnalysisResponse(BaseModel):
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_model(request: AnalyzeRequest):
+@limiter.limit("30/minute")
+async def analyze_model(request: Request, analyze_request: AnalyzeRequest):
     """
     Run architecture analysis on a previously uploaded model.
 
@@ -57,11 +73,17 @@ async def analyze_model(request: AnalyzeRequest):
         - Health score (0-100) and grade (A-F)
         - FLOPs, memory, and training time estimates
     """
-    graph = graph_store.get(request.model_id)
+    # Validate model_id format
+    try:
+        analyze_request.validate_model_id()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    graph = graph_store.get(analyze_request.model_id)
     if not graph:
         raise HTTPException(
             status_code=404,
-            detail=f"Model not found: {request.model_id}. Upload it first."
+            detail=f"Model not found: {analyze_request.model_id}. Upload it first."
         )
 
     # Calculate FLOPs

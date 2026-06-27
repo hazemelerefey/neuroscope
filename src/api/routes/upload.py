@@ -4,17 +4,26 @@ Upload API Route — Handle model file uploads.
 
 import os
 import tempfile
+import uuid
 from typing import Optional
 
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Request
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from src.parsers import get_all_parsers
-from src.parsers.onnx_parser import ONNXParser
 from src.graph import NeuroScopeGraph
 from src.store import graph_store
 
 router = APIRouter()
+
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
+# Configuration
+MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
+SUPPORTED_EXTENSIONS = {".onnx", ".pt", ".pth", ".h5", ".keras", ".tflite"}
 
 
 def _get_parsers():
@@ -25,6 +34,7 @@ def _get_parsers():
 class UploadResponse(BaseModel):
     success: bool
     message: str
+    model_id: str  # UUID for this upload
     model_name: str
     framework: str
     num_layers: int
@@ -33,7 +43,8 @@ class UploadResponse(BaseModel):
 
 
 @router.post("/upload", response_model=UploadResponse)
-async def upload_model(file: UploadFile = File(...)):
+@limiter.limit("10/minute")
+async def upload_model(request: Request, file: UploadFile = File(...)):
     """
     Upload a model file for analysis.
 
@@ -42,49 +53,67 @@ async def upload_model(file: UploadFile = File(...)):
     """
     # Validate file extension
     filename = file.filename or ""
-    supported_extensions = {".onnx", ".pt", ".pth", ".h5", ".keras", ".tflite"}
     ext = os.path.splitext(filename)[1].lower()
 
-    if ext not in supported_extensions:
+    if ext not in SUPPORTED_EXTENSIONS:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported format: {ext}. Supported: {', '.join(supported_extensions)}"
+            detail=f"Unsupported format: {ext}. Supported: {', '.join(SUPPORTED_EXTENSIONS)}"
         )
 
-    # Save uploaded file to temp directory
+    # Read file content with size limit
+    try:
+        content = await file.read()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read file: {e}")
+
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB"
+        )
+
+    # Generate unique model ID
+    model_id = str(uuid.uuid4())
+
+    # Save to temp file and parse
+    tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
-            content = await file.read()
             tmp.write(content)
             tmp_path = tmp.name
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save file: {e}")
 
-    # Parse the model
-    try:
+        # Parse the model
         graph = _parse_model(tmp_path)
+
+        # Store graph with UUID as key
+        graph_store.put(model_id, graph)
+
+        # Serialize graph for frontend
+        graph_json = _serialize_graph(graph)
+
+        return UploadResponse(
+            success=True,
+            message=f"Successfully parsed {filename}",
+            model_id=model_id,
+            model_name=graph.model_name,
+            framework=graph.framework,
+            num_layers=len(graph.nodes),
+            total_params=graph.total_params,
+            graph_json=graph_json,
+        )
+
+    except HTTPException:
+        raise
     except Exception as e:
-        os.unlink(tmp_path)
         raise HTTPException(status_code=422, detail=f"Failed to parse model: {e}")
     finally:
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
-
-    # Store graph in shared store for analyze/export routes
-    graph_store.put(graph.model_name, graph)
-
-    # Serialize graph for frontend
-    graph_json = _serialize_graph(graph)
-
-    return UploadResponse(
-        success=True,
-        message=f"Successfully parsed {filename}",
-        model_name=graph.model_name,
-        framework=graph.framework,
-        num_layers=len(graph.nodes),
-        total_params=graph.total_params,
-        graph_json=graph_json,
-    )
+        # Always clean up temp file
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass  # Best effort cleanup
 
 
 def _parse_model(file_path: str) -> NeuroScopeGraph:

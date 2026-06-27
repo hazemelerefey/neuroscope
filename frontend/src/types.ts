@@ -61,6 +61,7 @@ export interface AnalysisReport {
 
 /** Graph data structure (after unwrapping graph_json from upload response) */
 export interface GraphData {
+  model_id: string  // UUID from upload
   nodes: LayerNode[]
   edges: Edge[]
   model_name: string
@@ -77,6 +78,7 @@ export interface GraphData {
 export interface UploadResponse {
   success: boolean
   message: string
+  model_id: string  // UUID for this upload
   model_name: string
   framework: string
   num_layers: number

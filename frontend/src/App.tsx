@@ -7,6 +7,61 @@ import StatsPanel from './components/StatsPanel'
 import ExportMenu from './components/ExportMenu'
 import LayerDetail from './components/LayerDetail'
 import type { UploadResponse } from './types'
+import { Component, type ReactNode } from 'react'
+
+// Error Boundary for 3D Canvas
+class CanvasErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: string }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false, error: '' }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error.message }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          padding: '2rem',
+          textAlign: 'center',
+          color: '#64748b',
+        }}>
+          <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+            3D visualization failed to render
+          </p>
+          <p style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
+            {this.state.error}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: '' })}
+            style={{
+              marginTop: '1rem',
+              padding: '0.5rem 1rem',
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 function App() {
   const graphData = useStore((s) => s.graphData)
@@ -19,6 +74,7 @@ function App() {
   const handleUpload = (responseData: UploadResponse) => {
     const gj = responseData.graph_json
     setGraphData({
+      model_id: responseData.model_id,
       nodes: gj.nodes,
       edges: gj.edges,
       model_name: responseData.model_name,
@@ -56,10 +112,12 @@ function App() {
         ) : (
           <div className="workspace">
             <div className="canvas-area">
-              <Canvas3D
-                graphData={graphData}
-                onLayerClick={selectLayer}
-              />
+              <CanvasErrorBoundary>
+                <Canvas3D
+                  graphData={graphData}
+                  onLayerClick={selectLayer}
+                />
+              </CanvasErrorBoundary>
             </div>
             <div className="panel-area">
               {selectedLayer && (
@@ -73,7 +131,7 @@ function App() {
                 graphData={graphData}
                 onAnalysisComplete={useStore.getState().setAnalysisData}
               />
-              <ExportMenu modelId={graphData.model_name} />
+              <ExportMenu modelId={graphData.model_id} />
             </div>
           </div>
         )}
