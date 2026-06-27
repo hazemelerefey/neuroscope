@@ -1,7 +1,7 @@
 # 🧠 NeuroScope
 
 > **AI-Powered 3D Neural Network Architecture Visualizer & Analyzer**
-> Upload any ONNX model → See it in 3D → Understand what's wrong → Learn why it matters
+> Upload any model → See it in 3D → Understand what's wrong → Learn why it matters
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
@@ -12,29 +12,43 @@
 
 ## 🎯 What is NeuroScope?
 
-NeuroScope is a web-based tool that helps ML students and developers **understand, visualize, and debug** neural network architectures. Upload an ONNX model file and instantly see it rendered as an interactive 3D scene — with automated analysis that catches common architecture mistakes.
+NeuroScope is an **open-source** tool that helps ML students and developers **understand, visualize, and debug** neural network architectures. Upload a model file and instantly see it rendered as an interactive 3D scene — with automated analysis that catches common architecture mistakes.
 
-### Current Features (Implemented)
+**Works online and offline.** NeuroScope can be downloaded and run locally, making it accessible to students in areas with weak or no internet connectivity across Africa.
+
+### Core Features
 
 | Feature | Description |
 |---------|-------------|
 | 🎮 **3D Visualization** | Interactive Three.js rendering of your model architecture with click-to-inspect |
-| 🔍 **Architecture Linter** | 11 rules across layer, architecture, and efficiency categories |
+| 🔍 **Architecture Linter** | 47+ anti-pattern detection rules across layer, architecture, and efficiency categories |
 | 📊 **FLOPs & Memory** | Per-layer computation cost and memory footprint estimation |
-| 📁 **ONNX Support** | Full ONNX model parsing with shape inference and weight extraction |
+| 📁 **Multi-Format Support** | ONNX, PyTorch, Keras, TensorFlow, TensorFlow Lite |
 | 📖 **Educational Content** | Plain-language descriptions of what each layer does and common mistakes |
+| 🌍 **Multilingual** | English, French, Arabic, Swahili, Portuguese |
 | 🐳 **Docker Ready** | Docker Compose setup for easy local deployment |
+| 📥 **Offline Capable** | Desktop application for Windows and Mac — no internet required |
 
-### Roadmap (In Development)
+---
 
-| Feature | Status |
-|---------|--------|
-| 🔄 **Multi-Format Parsers** | PyTorch (.pt), Keras (.h5), TFLite (.tflite) — building |
-| 🆚 **Model Comparison** | Side-by-side architecture diff — building |
-| 📤 **Export Suite** | GLB (3D), PDF (reports), Markdown — building |
-| 🌍 **Multilingual** | French, Arabic, Swahili, Portuguese — planned |
-| 📱 **VS Code Extension** | Real-time 3D visualization in VS Code — planned |
-| 🔌 **Offline PWA** | Works without internet after first load — planned |
+## 🚀 Deliverables
+
+NeuroScope is an ecosystem of tools designed to meet students wherever they work:
+
+| # | Deliverable | Status | Description |
+|---|-------------|--------|-------------|
+| 1 | **Web Application** | ✅ Current Release | Browser-based platform for model upload, 3D visualization, analysis, and reporting |
+| 2 | **VS Code Extension** | 🔄 Update | Real-time code visualization inside VS Code — architecture renders in a 3D panel, updating live with every edit |
+| 3 | **AI Agent Plugins** | 🔄 Update | Integrations for Claude, GitHub Copilot, and other LLM agents — turns any AI assistant into an architecture-aware code reviewer |
+| 4 | **Desktop Application** | 🔄 Update | Standalone app for Windows and Mac — downloads and runs locally, completely offline |
+
+### Roadmap Progression
+
+```
+Web Application (Current) → VS Code Extension → AI Agent Plugins → Desktop Application
+```
+
+This is a **progression of features**, not a hierarchy. Each update builds on the previous to cover all student needs — from browser-based access to fully offline desktop use.
 
 ---
 
@@ -44,7 +58,7 @@ NeuroScope is a web-based tool that helps ML students and developers **understan
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/neuroscope.git
+git clone https://github.com/hazemelerefey/neuroscope.git
 cd neuroscope
 
 # Start with Docker Compose
@@ -58,7 +72,7 @@ docker-compose up --build
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/neuroscope.git
+git clone https://github.com/hazemelerefey/neuroscope.git
 cd neuroscope
 
 # Backend
@@ -81,7 +95,7 @@ neuroscope/
 │   ├── parsers/              # Model file parsers
 │   │   └── onnx_parser.py   # ONNX parser (implemented)
 │   ├── analysis/             # Architecture linter & stats
-│   │   ├── rules/            # Anti-pattern detection rules (11 rules)
+│   │   ├── rules/            # Anti-pattern detection rules (47+ rules)
 │   │   ├── flops.py          # FLOPs calculator
 │   │   └── memory.py         # Memory estimator
 │   ├── graph/                # Internal graph representation
@@ -98,11 +112,12 @@ neuroscope/
 ├── config/                   # Configuration files
 │   ├── analysis_rules.yaml   # Linter rules & thresholds
 │   ├── layer_shapes.yaml     # Layer → 3D shape mapping
-│   └── languages/            # i18n (English only currently)
+│   └── languages/            # i18n (EN, FR, AR, SW, PT)
 │
 ├── docker/                   # Dockerfiles
 ├── docs/                     # Documentation
 ├── research/                 # Technical research reports
+├── competition/              # AYAIR 2026 submission materials
 ├── tests/                    # Test suite
 ├── docker-compose.yml        # Docker Compose config
 └── requirements.txt          # Python dependencies
@@ -113,12 +128,12 @@ neuroscope/
 ## 🏗️ How It Works
 
 ```
-Upload ONNX Model (.onnx)
+Upload Model File (.onnx, .pt, .h5, .tflite)
         │
         ▼
 ┌─────────────┐     ┌──────────────┐     ┌───────────────┐
-│ ONNX PARSER │────▶│ GRAPH BUILDER│────▶│   ANALYZER    │
-│  (Extract   │     │  (Nodes +    │     │  (11 rules:   │
+│   PARSER    │────▶│ GRAPH BUILDER│────▶│   ANALYZER    │
+│  (Extract   │     │  (Nodes +    │     │  (47+ rules:  │
 │   layers)   │     │   Edges)     │     │   FLOPs +     │
 └─────────────┘     └──────────────┘     │   Memory)     │
                                           └───────┬───────┘
@@ -144,9 +159,36 @@ NeuroScope is submitted to the **Presidential African Youth in AI and Robotics C
 
 - **Free & Open Source** — No cost barrier, MIT License
 - **Browser-Based** — No GPU, no installation, works on any device
+- **Offline Capable** — Desktop application for areas with weak internet
 - **Automated Guidance** — Catches common mistakes where no senior ML engineer is available
 - **Educational** — Every layer has a plain-language explanation
 - **Deployable** — Docker setup for institutions to run locally
+
+### Language Support
+
+| Language | Region | Speakers |
+|----------|--------|----------|
+| Arabic | Egypt, North Africa, Middle East | 400M+ |
+| French | West & Central Africa | 300M+ |
+| English | East & Southern Africa, Global | 1.5B+ |
+| Swahili | East Africa (Kenya, Tanzania, Rwanda) | 100M+ |
+| Portuguese | Lusophone Southern Africa | 250M+ |
+
+---
+
+## 👥 Team: DigiNeurons
+
+| Name | Role | Track |
+|------|------|-------|
+| **Hazem Khaled** | Team Leader · Deep Learning Engineer | Data Analysis |
+| Ahmed Ali | Data Scientist | Data Science |
+| Mohamed Abdel Ghani | Data Scientist | Data Science |
+| Yossef Shrif | Data Analyst | Data Analysis |
+| Yomna Ashraf | Data Analyst | Data Analysis |
+| Shahd Khairy | Frontend Developer | Software |
+| Mohamed Wagdi | Backend Developer | Software |
+| Ziad Mohamed | Backend Developer | Software |
+| Yossef Safout | Backend Developer | Software |
 
 ---
 
@@ -154,10 +196,10 @@ NeuroScope is submitted to the **Presidential African Youth in AI and Robotics C
 
 | Date | Milestone | Status |
 |------|-----------|--------|
-| **Jun 2026** | ONNX parser + 3D visualization + analysis engine | ✅ Done |
-| **Jul 2026** | PyTorch/Keras parsers + export features | 🚧 In progress |
-| **Aug 2026** | Model comparison + advanced analysis | 📋 Planned |
-| **Sep 2026** | Polish, deploy, demo video | 📋 Planned |
+| **Jun 2026** | ONNX parser + 3D visualization + 47+ analysis rules | ✅ Done |
+| **Jul 2026** | PyTorch/Keras parsers + export features | 🚧 In Progress |
+| **Aug 2026** | VS Code Extension + AI Agent Plugins | 📋 Planned |
+| **Sep 2026** | Desktop Application (Windows/Mac) + polish | 📋 Planned |
 | **Oct 2026** | Finals (if selected) | 📋 Planned |
 
 ---
@@ -172,31 +214,14 @@ We welcome contributions! Here's how to get started:
 4. **Push** to the branch (`git push origin feature/my-feature`)
 5. **Open** a Pull Request
 
-### Development Setup
-
-```bash
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/neuroscope.git
-cd neuroscope
-
-# Backend
-pip install -r requirements.txt
-pip install pytest httpx  # for testing
-pytest
-
-# Frontend
-cd frontend
-npm install
-npm run dev
-```
-
 ### Areas Where Help is Needed
 
 - Implementing PyTorch/Keras/TFLite parsers
 - Adding new analysis rules
 - Improving 3D visualization
 - Writing educational layer descriptions
-- Adding test coverage
+- Adding translations for new languages
+- Desktop application development (Electron)
 
 ---
 
