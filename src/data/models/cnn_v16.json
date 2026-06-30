@@ -1,0 +1,563 @@
+{
+  "id": "cnn_v16",
+  "name": "CNN v16",
+  "family": "CNN",
+  "version": "16",
+  "description": "16-layer Convolutional Neural Network for image classification. A standard architecture with convolutional blocks, batch normalization, and a classification head.",
+  "sizes": null,
+  "layers": [
+    {
+      "id": "conv1",
+      "type": "conv2d",
+      "name": "Conv2d_1",
+      "params": { "in_channels": 3, "out_channels": 64, "kernel_size": 3, "padding": 1 },
+      "code": "nn.Conv2d(3, 64, kernel_size=3, padding=1)",
+      "freezable": true
+    },
+    {
+      "id": "bn1",
+      "type": "batchnorm",
+      "name": "BatchNorm_1",
+      "params": { "num_features": 64 },
+      "code": "nn.BatchNorm2d(64)",
+      "freezable": true
+    },
+    {
+      "id": "act1",
+      "type": "activation",
+      "name": "Activation_1",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    },
+    {
+      "id": "conv2",
+      "type": "conv2d",
+      "name": "Conv2d_2",
+      "params": { "in_channels": 64, "out_channels": 64, "kernel_size": 3, "padding": 1 },
+      "code": "nn.Conv2d(64, 64, kernel_size=3, padding=1)",
+      "freezable": true
+    },
+    {
+      "id": "bn2",
+      "type": "batchnorm",
+      "name": "BatchNorm_2",
+      "params": { "num_features": 64 },
+      "code": "nn.BatchNorm2d(64)",
+      "freezable": true
+    },
+    {
+      "id": "act2",
+      "type": "activation",
+      "name": "Activation_2",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    },
+    {
+      "id": "pool1",
+      "type": "maxpool",
+      "name": "MaxPool_1",
+      "params": { "kernel_size": 2, "stride": 2 },
+      "code": "nn.MaxPool2d(kernel_size=2, stride=2)",
+      "freezable": false
+    },
+    {
+      "id": "conv3",
+      "type": "conv2d",
+      "name": "Conv2d_3",
+      "params": { "in_channels": 64, "out_channels": 128, "kernel_size": 3, "padding": 1 },
+      "code": "nn.Conv2d(64, 128, kernel_size=3, padding=1)",
+      "freezable": true
+    },
+    {
+      "id": "bn3",
+      "type": "batchnorm",
+      "name": "BatchNorm_3",
+      "params": { "num_features": 128 },
+      "code": "nn.BatchNorm2d(128)",
+      "freezable": true
+    },
+    {
+      "id": "act3",
+      "type": "activation",
+      "name": "Activation_3",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    },
+    {
+      "id": "conv4",
+      "type": "conv2d",
+      "name": "Conv2d_4",
+      "params": { "in_channels": 128, "out_channels": 128, "kernel_size": 3, "padding": 1 },
+      "code": "nn.Conv2d(128, 128, kernel_size=3, padding=1)",
+      "freezable": true
+    },
+    {
+      "id": "bn4",
+      "type": "batchnorm",
+      "name": "BatchNorm_4",
+      "params": { "num_features": 128 },
+      "code": "nn.BatchNorm2d(128)",
+      "freezable": true
+    },
+    {
+      "id": "act4",
+      "type": "activation",
+      "name": "Activation_4",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    },
+    {
+      "id": "pool2",
+      "type": "maxpool",
+      "name": "MaxPool_2",
+      "params": { "kernel_size": 2, "stride": 2 },
+      "code": "nn.MaxPool2d(kernel_size=2, stride=2)",
+      "freezable": false
+    },
+    {
+      "id": "conv5",
+      "type": "conv2d",
+      "name": "Conv2d_5",
+      "params": { "in_channels": 128, "out_channels": 256, "kernel_size": 3, "padding": 1 },
+      "code": "nn.Conv2d(128, 256, kernel_size=3, padding=1)",
+      "freezable": true
+    },
+    {
+      "id": "bn5",
+      "type": "batchnorm",
+      "name": "BatchNorm_5",
+      "params": { "num_features": 256 },
+      "code": "nn.BatchNorm2d(256)",
+      "freezable": true
+    },
+    {
+      "id": "act5",
+      "type": "activation",
+      "name": "Activation_5",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    },
+    {
+      "id": "conv6",
+      "type": "conv2d",
+      "name": "Conv2d_6",
+      "params": { "in_channels": 256, "out_channels": 256, "kernel_size": 3, "padding": 1 },
+      "code": "nn.Conv2d(256, 256, kernel_size=3, padding=1)",
+      "freezable": true
+    },
+    {
+      "id": "bn6",
+      "type": "batchnorm",
+      "name": "BatchNorm_6",
+      "params": { "num_features": 256 },
+      "code": "nn.BatchNorm2d(256)",
+      "freezable": true
+    },
+    {
+      "id": "act6",
+      "type": "activation",
+      "name": "Activation_6",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    },
+    {
+      "id": "pool3",
+      "type": "maxpool",
+      "name": "MaxPool_3",
+      "params": { "kernel_size": 2, "stride": 2 },
+      "code": "nn.MaxPool2d(kernel_size=2, stride=2)",
+      "freezable": false
+    },
+    {
+      "id": "flatten",
+      "type": "flatten",
+      "name": "Flatten",
+      "params": {},
+      "code": "nn.Flatten()",
+      "freezable": false
+    },
+    {
+      "id": "fc1",
+      "type": "linear",
+      "name": "FC_1",
+      "params": { "in_features": 256, "out_features": 512 },
+      "code": "nn.Linear(256, 512)",
+      "freezable": true
+    },
+    {
+      "id": "act7",
+      "type": "activation",
+      "name": "Activation_7",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    },
+    {
+      "id": "dropout",
+      "type": "dropout",
+      "name": "Dropout",
+      "params": { "p": 0.5 },
+      "code": "nn.Dropout(0.5)",
+      "freezable": false
+    },
+    {
+      "id": "fc2",
+      "type": "linear",
+      "name": "FC_2",
+      "params": { "in_features": 512, "out_features": 256 },
+      "code": "nn.Linear(512, 256)",
+      "freezable": true
+    },
+    {
+      "id": "act8",
+      "type": "activation",
+      "name": "Activation_8",
+      "params": { "function": "ReLU" },
+      "code": "nn.ReLU(inplace=True)",
+      "freezable": false
+    }
+  ],
+  "head": {
+    "id": "head",
+    "type": "linear",
+    "name": "Classification Head",
+    "activation": "softmax",
+    "output_neurons": "num_classes",
+    "code": "nn.Linear(256, num_classes)",
+    "activation_code": "nn.Softmax(dim=1)",
+    "description": "The classification head — outputs probability for each class. The number of neurons equals the number of classes in your dataset. Uses Softmax activation to convert logits to probabilities.",
+    "freezable": false
+  },
+  "extensions": [
+    {
+      "id": "optimizer",
+      "name": "Optimizer",
+      "category": "training",
+      "color": "green",
+      "icon": "⚡",
+      "options": [
+        {
+          "id": "sgd",
+          "name": "SGD",
+          "code": "optimizer = optim.SGD(model.parameters(), lr={lr}, momentum=0.9)",
+          "description": "Stochastic Gradient Descent — the classic optimization algorithm. Updates weights based on the gradient of the loss function.",
+          "when_to_use": "When you have a well-tuned learning rate schedule. Often used with momentum for better convergence.",
+          "consequences": "Can be slow to converge. May get stuck in local minima without momentum. Requires careful learning rate tuning.",
+          "default": false
+        },
+        {
+          "id": "adam",
+          "name": "Adam",
+          "code": "optimizer = optim.Adam(model.parameters(), lr={lr})",
+          "description": "Adaptive Moment Estimation — adjusts learning rate individually for each parameter based on first and second moments of gradients.",
+          "when_to_use": "Good default for most tasks. Works well without much learning rate tuning.",
+          "consequences": "Can overfit on small datasets. Weight decay is not properly decoupled from gradient updates.",
+          "default": false
+        },
+        {
+          "id": "adamw",
+          "name": "AdamW",
+          "code": "optimizer = optim.AdamW(model.parameters(), lr={lr}, weight_decay=0.01)",
+          "description": "Adam with decoupled weight decay — fixes Adam's incorrect weight decay implementation. Weight decay is applied directly to weights, not through gradients.",
+          "when_to_use": "Best choice for most modern deep learning architectures. Default recommendation.",
+          "consequences": "Slightly more computation than vanilla Adam. Weight decay value needs to be tuned.",
+          "default": true
+        },
+        {
+          "id": "rmsprop",
+          "name": "RMSprop",
+          "code": "optimizer = optim.RMSprop(model.parameters(), lr={lr})",
+          "description": "Root Mean Square Propagation — divides learning rate by running average of gradient magnitudes. Adapts learning rate per parameter.",
+          "when_to_use": "Originally designed for RNNs. Rarely used for CNNs but can work in specific scenarios.",
+          "consequences": "Not the best choice for image classification. Can be unstable without proper hyperparameter tuning.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "activation",
+      "name": "Activation Function",
+      "category": "training",
+      "color": "green",
+      "icon": "🔥",
+      "options": [
+        {
+          "id": "relu",
+          "name": "ReLU",
+          "code": "nn.ReLU(inplace=True)",
+          "description": "Rectified Linear Unit — outputs max(0, x). The most common activation function in deep learning.",
+          "when_to_use": "Default choice for most hidden layers. Fast computation, good gradient flow for positive values.",
+          "consequences": "Dying ReLU problem — neurons can permanently output 0 if they get stuck in the negative region. About 50% of neurons may be inactive.",
+          "default": false
+        },
+        {
+          "id": "leaky_relu",
+          "name": "LeakyReLU",
+          "code": "nn.LeakyReLU(negative_slope=0.01, inplace=True)",
+          "description": "Like ReLU but allows a small negative slope (0.01 * x) for negative inputs. Prevents neurons from dying.",
+          "when_to_use": "When you observe dying ReLU problems — many neurons outputting 0. Good alternative to standard ReLU.",
+          "consequences": "Slightly more compute than ReLU. The negative slope value (0.01) is a hyperparameter that could be tuned.",
+          "default": false
+        },
+        {
+          "id": "silu",
+          "name": "SiLU (Swish)",
+          "code": "nn.SiLU(inplace=True)",
+          "description": "Sigmoid Linear Unit — x * sigmoid(x). A smooth, non-monotonic function discovered by Google Brain.",
+          "when_to_use": "Modern choice for image tasks. Used in EfficientNet and many recent architectures. Smooth gradient helps optimization.",
+          "consequences": "More compute than ReLU due to sigmoid operation. Slightly less interpretable.",
+          "default": false
+        },
+        {
+          "id": "mish",
+          "name": "Mish",
+          "code": "nn.Mish(inplace=True)",
+          "description": "Self-regularized non-monotonic activation — x * tanh(softplus(x)). Discovered by Diganta Misra.",
+          "when_to_use": "State-of-the-art for many image tasks. Used in YOLOv4 and other modern architectures.",
+          "consequences": "More compute than ReLU and SiLU. Less widely studied, so less community knowledge about best practices.",
+          "default": false
+        },
+        {
+          "id": "gelu",
+          "name": "GELU",
+          "code": "nn.GELU()",
+          "description": "Gaussian Error Linear Unit — x * Φ(x) where Φ is the CDF of standard normal distribution. Used in transformers.",
+          "when_to_use": "Originally designed for transformers (BERT, GPT). Good for fine-tuning pretrained models that use GELU.",
+          "consequences": "More compute than ReLU. May not provide benefits for simple CNN architectures.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "loss",
+      "name": "Loss Function",
+      "category": "training",
+      "color": "green",
+      "icon": "💚",
+      "options": [
+        {
+          "id": "cross_entropy",
+          "name": "Cross-Entropy Loss",
+          "code": "criterion = nn.CrossEntropyLoss()",
+          "description": "Standard classification loss — measures the difference between predicted probability distribution and true labels. Combines LogSoftmax and NLLLoss.",
+          "when_to_use": "Default for multi-class classification. Works well when classes are balanced.",
+          "consequences": "Doesn't handle class imbalance well — model may bias toward majority classes. Sensitive to label noise.",
+          "default": true
+        },
+        {
+          "id": "focal_loss",
+          "name": "Focal Loss",
+          "code": "criterion = FocalLoss(gamma=2.0, alpha=0.25)",
+          "description": "Down-weights easy examples and focuses on hard ones. Originally designed for object detection with extreme class imbalance.",
+          "when_to_use": "When your dataset has significant class imbalance. Forces the model to focus on difficult examples.",
+          "consequences": "More complex — requires tuning gamma and alpha parameters. May not help if classes are already balanced.",
+          "default": false
+        },
+        {
+          "id": "label_smoothing",
+          "name": "Label Smoothing",
+          "code": "criterion = nn.CrossEntropyLoss(label_smoothing=0.1)",
+          "description": "Prevents the model from becoming overconfident by softening the target distribution. Instead of [0,0,1,0], uses [0.025, 0.025, 0.925, 0.025].",
+          "when_to_use": "When the model is overfitting or becoming overconfident in its predictions. Good for regularization.",
+          "consequences": "Slightly reduces peak accuracy. The smoothing value (0.1) is a hyperparameter that needs tuning.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "learning_rate",
+      "name": "Learning Rate",
+      "category": "training",
+      "color": "green",
+      "icon": "📈",
+      "options": [
+        {
+          "id": "lr_01",
+          "name": "0.1",
+          "code": "lr0 = 0.1",
+          "description": "High learning rate — large steps in the optimization landscape.",
+          "when_to_use": "Fine-tuning with pretrained weights when the pretrained features are very different from your target. Or with learning rate warmup.",
+          "consequences": "May overshoot minima, causing unstable training. Loss may oscillate or diverge.",
+          "default": false
+        },
+        {
+          "id": "lr_001",
+          "name": "0.01",
+          "code": "lr0 = 0.01",
+          "description": "Medium learning rate — balanced step size.",
+          "when_to_use": "Training from scratch with SGD. Good starting point for most CNN architectures.",
+          "consequences": "Good balance between speed and stability. May need learning rate scheduling for best results.",
+          "default": false
+        },
+        {
+          "id": "lr_0001",
+          "name": "0.001",
+          "code": "lr0 = 0.001",
+          "description": "Low learning rate — small, careful steps.",
+          "when_to_use": "Default for Adam/AdamW optimizers. Safe choice for most scenarios.",
+          "consequences": "Safe but may converge slowly. Good for fine-tuning pretrained models.",
+          "default": true
+        },
+        {
+          "id": "lr_00001",
+          "name": "0.0001",
+          "code": "lr0 = 0.0001",
+          "description": "Very low learning rate — minimal changes per step.",
+          "when_to_use": "Fine-tuning pretrained models. Final training stages when you want to refine without disrupting learned features.",
+          "consequences": "Very slow convergence. May need many more epochs to reach good performance.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "batch_size",
+      "name": "Batch Size",
+      "category": "functional",
+      "color": "yellow",
+      "icon": "📦",
+      "options": [
+        {
+          "id": "batch_8",
+          "name": "8",
+          "code": "batch_size = 8",
+          "description": "Small batch — processes 8 images per training step.",
+          "when_to_use": "Limited GPU memory. Small datasets where you want more frequent weight updates.",
+          "consequences": "Noisy gradients — each batch is less representative of the full dataset. Slower training per epoch but more updates.",
+          "default": false
+        },
+        {
+          "id": "batch_16",
+          "name": "16",
+          "code": "batch_size = 16",
+          "description": "Medium batch — processes 16 images per training step.",
+          "when_to_use": "Good default for most GPUs (4-8GB VRAM). Balances gradient quality and memory usage.",
+          "consequences": "Good balance. Works well with most learning rates.",
+          "default": true
+        },
+        {
+          "id": "batch_32",
+          "name": "32",
+          "code": "batch_size = 32",
+          "description": "Large batch — processes 32 images per training step.",
+          "when_to_use": "Good GPU memory (8GB+). When you want smoother gradient estimates.",
+          "consequences": "Smoother gradients but may generalize slightly worse. May need learning rate scaling.",
+          "default": false
+        },
+        {
+          "id": "batch_64",
+          "name": "64",
+          "code": "batch_size = 64",
+          "description": "Very large batch — processes 64 images per training step.",
+          "when_to_use": "High GPU memory (12GB+). Multi-GPU setups.",
+          "consequences": "Requires learning rate scaling (linear scaling rule). May need warmup. Can reduce generalization.",
+          "default": false
+        },
+        {
+          "id": "batch_128",
+          "name": "128",
+          "code": "batch_size = 128",
+          "description": "Huge batch — processes 128 images per training step.",
+          "when_to_use": "Large-scale training with multiple GPUs. Research experiments.",
+          "consequences": "Requires learning rate warmup and scaling. Significant GPU memory needed.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "epochs",
+      "name": "Epochs",
+      "category": "functional",
+      "color": "yellow",
+      "icon": "🔄",
+      "options": [
+        {
+          "id": "epochs_50",
+          "name": "50",
+          "code": "num_epochs = 50",
+          "description": "Quick training — 50 passes through the entire dataset.",
+          "when_to_use": "Testing and debugging your training pipeline. Quick experiments to verify everything works.",
+          "consequences": "May underfit — model doesn't see enough data to learn complex patterns. Good for iteration speed.",
+          "default": false
+        },
+        {
+          "id": "epochs_100",
+          "name": "100",
+          "code": "num_epochs = 100",
+          "description": "Standard training — 100 passes through the dataset.",
+          "when_to_use": "Small to medium datasets. Good starting point for most classification tasks.",
+          "consequences": "Reasonable training time. Model should converge for most simple tasks.",
+          "default": true
+        },
+        {
+          "id": "epochs_200",
+          "name": "200",
+          "code": "num_epochs = 200",
+          "description": "Long training — 200 passes through the dataset.",
+          "when_to_use": "Medium to large datasets. When 100 epochs isn't enough for convergence.",
+          "consequences": "Better convergence but longer training time. Watch for overfitting — use validation set.",
+          "default": false
+        },
+        {
+          "id": "epochs_500",
+          "name": "500",
+          "code": "num_epochs = 500",
+          "description": "Very long training — 500 passes through the dataset.",
+          "when_to_use": "Large datasets with augmentation. When you need maximum performance.",
+          "consequences": "Long training time. Strongly recommend using early stopping to prevent overfitting.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "augmentation",
+      "name": "Data Augmentation",
+      "category": "data",
+      "color": "purple",
+      "icon": "🟣",
+      "options": [
+        {
+          "id": "none",
+          "name": "None",
+          "code": "train_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])",
+          "description": "No data augmentation — only basic preprocessing (ToTensor + Normalize).",
+          "when_to_use": "When your dataset is already large and diverse. Or when augmentation would hurt (e.g., medical images where orientation matters).",
+          "consequences": "High risk of overfitting, especially on small datasets. Model memorizes training data instead of learning generalizable features.",
+          "default": false
+        },
+        {
+          "id": "basic",
+          "name": "Basic",
+          "code": "train_transform = transforms.Compose([transforms.RandomHorizontalFlip(p=0.5), transforms.RandomRotation(10), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])",
+          "description": "Basic augmentation — random horizontal flip and small rotation (±10°). Simple but effective.",
+          "when_to_use": "Small datasets where you need more diversity. General-purpose image classification.",
+          "consequences": "May not help with orientation-sensitive data (e.g., text, digits). Limited diversity compared to advanced augmentation.",
+          "default": true
+        },
+        {
+          "id": "advanced",
+          "name": "Advanced",
+          "code": "train_transform = transforms.Compose([transforms.RandomHorizontalFlip(p=0.5), transforms.RandomVerticalFlip(p=0.2), transforms.RandomRotation(15), transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1), transforms.RandomResizedCrop(224, scale=(0.8, 1.0)), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])",
+          "description": "Advanced augmentation — flip, rotation, color jitter, and random crop. Significantly increases training data diversity.",
+          "when_to_use": "Medium datasets where basic augmentation isn't enough. When you need the model to be robust to visual variations.",
+          "consequences": "May introduce unrealistic samples (e.g., wrong colors for medical images). Longer preprocessing time per image.",
+          "default": false
+        },
+        {
+          "id": "custom",
+          "name": "Custom",
+          "code": "# TODO: Define your own augmentation pipeline\ntrain_transform = transforms.Compose([\n    # Add your transforms here\n    transforms.ToTensor(),\n    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])\n])",
+          "description": "Custom augmentation — define your own pipeline. Full control over what transforms to apply.",
+          "when_to_use": "Advanced users who know exactly what augmentations their data needs. Domain-specific requirements.",
+          "consequences": "Requires knowledge of torchvision transforms. Wrong choices can hurt performance.",
+          "default": false
+        }
+      ]
+    }
+  ]
+}

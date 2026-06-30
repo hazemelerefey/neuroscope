@@ -1,12 +1,11 @@
 import { useStore } from './store'
-import { Brain, RotateCcw } from 'lucide-react'
-import UploadZone from './components/UploadZone'
+import { Brain, RotateCcw, Code, Layers } from 'lucide-react'
 import Canvas3D from './components/Canvas3D'
-import AnalysisPanel from './components/AnalysisPanel'
-import StatsPanel from './components/StatsPanel'
-import ExportMenu from './components/ExportMenu'
-import LayerDetail from './components/LayerDetail'
-import type { UploadResponse } from './types'
+import ModelSelector from './components/ModelSelector'
+import ExtensionConfig from './components/ExtensionConfig'
+import InfoPanel from './components/InfoPanel'
+import NotebookWindow from './components/NotebookWindow'
+import DevelopMode from './components/DevelopMode'
 import { Component, type ReactNode } from 'react'
 
 // Error Boundary for 3D Canvas
@@ -64,28 +63,19 @@ class CanvasErrorBoundary extends Component<
 }
 
 function App() {
-  const graphData = useStore((s) => s.graphData)
-  const analysisData = useStore((s) => s.analysisData)
-  const selectedLayer = useStore((s) => s.selectedLayer)
-  const setGraphData = useStore((s) => s.setGraphData)
-  const selectLayer = useStore((s) => s.selectLayer)
-  const reset = useStore((s) => s.reset)
+  const selectedModel = useStore((s) => s.selectedModel)
+  const selectedExtensionKind = useStore((s) => s.selectedExtensionKind)
+  const rightPanelTab = useStore((s) => s.rightPanelTab)
+  const developMode = useStore((s) => s.developMode)
+  const notebookOpen = useStore((s) => s.notebookOpen)
+  const clearModel = useStore((s) => s.clearModel)
+  const toggleDevelopMode = useStore((s) => s.toggleDevelopMode)
+  const toggleNotebook = useStore((s) => s.toggleNotebook)
+  const selectExtension = useStore((s) => s.selectExtension)
 
-  const handleUpload = (responseData: UploadResponse) => {
-    const gj = responseData.graph_json
-    setGraphData({
-      model_id: responseData.model_id,
-      nodes: gj.nodes,
-      edges: gj.edges,
-      model_name: responseData.model_name,
-      framework: responseData.framework,
-      input_shapes: gj.input_shapes,
-      output_shapes: gj.output_shapes,
-      total_params: responseData.total_params,
-      total_flops: gj.total_flops,
-      total_memory_bytes: gj.total_memory_bytes,
-      architecture_type: gj.architecture_type,
-    })
+  const handleExtensionClose = () => {
+    selectExtension(null as never)
+    useStore.getState().setRightPanelTab('model')
   }
 
   return (
@@ -96,45 +86,77 @@ function App() {
             <Brain size={24} />
             NeuroScope
           </h1>
-          <p>AI-Powered 3D Neural Network Architecture Visualizer & Analyzer</p>
+          <p>Visual Deep Learning Builder</p>
         </div>
-        {graphData && (
-          <button className="reset-btn" onClick={reset}>
-            <RotateCcw size={14} style={{ marginRight: 6 }} />
-            New Model
-          </button>
-        )}
+
+        <div className="header-actions">
+          {selectedModel && (
+            <>
+              <button
+                className={`toolbar-btn ${developMode ? 'active' : ''}`}
+                onClick={toggleDevelopMode}
+                title="Develop Mode — inspect and modify layers"
+              >
+                <Layers size={14} />
+                <span>Develop</span>
+              </button>
+              <button
+                className={`toolbar-btn ${notebookOpen ? 'active' : ''}`}
+                onClick={toggleNotebook}
+                title="Toggle Notebook"
+              >
+                <Code size={14} />
+                <span>Notebook</span>
+              </button>
+              <button className="toolbar-btn" onClick={clearModel} title="Start over">
+                <RotateCcw size={14} />
+                <span>Reset</span>
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
       <main className="app-main">
-        {!graphData ? (
-          <UploadZone onUpload={handleUpload} />
-        ) : (
-          <div className="workspace">
-            <div className="canvas-area">
-              <CanvasErrorBoundary>
-                <Canvas3D
-                  graphData={graphData}
-                  onLayerClick={selectLayer}
-                />
-              </CanvasErrorBoundary>
-            </div>
-            <div className="panel-area">
-              {selectedLayer && (
-                <LayerDetail
-                  layer={selectedLayer}
-                  onClose={() => selectLayer(null)}
-                />
-              )}
-              <StatsPanel graphData={graphData} analysisData={analysisData} />
-              <AnalysisPanel
-                graphData={graphData}
-                onAnalysisComplete={useStore.getState().setAnalysisData}
-              />
-              <ExportMenu modelId={graphData.model_id} />
-            </div>
+        <div className="workspace">
+          {/* Left: 3D Canvas */}
+          <div className="canvas-area">
+            <CanvasErrorBoundary>
+              <Canvas3D />
+            </CanvasErrorBoundary>
           </div>
-        )}
+
+          {/* Right: Panel area */}
+          <div className="panel-area">
+            {rightPanelTab === 'model' ? (
+              <ModelSelector />
+            ) : selectedExtensionKind ? (
+              <ExtensionConfig
+                kind={selectedExtensionKind}
+                onClose={handleExtensionClose}
+              />
+            ) : (
+              <ModelSelector />
+            )}
+          </div>
+
+          {/* Develop mode overlay (below canvas, above info) */}
+          {developMode && selectedModel && (
+            <div className="develop-panel">
+              <DevelopMode />
+            </div>
+          )}
+
+          {/* Notebook window (top-right overlay) */}
+          {notebookOpen && (
+            <NotebookWindow />
+          )}
+
+          {/* Info panel (bottom) */}
+          {selectedModel && (
+            <InfoPanel />
+          )}
+        </div>
       </main>
     </div>
   )

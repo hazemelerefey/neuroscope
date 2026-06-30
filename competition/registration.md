@@ -57,11 +57,11 @@
 > *"Initiatives using AI or robotics to inclusively, sustainably and efficiently improve educational offering and learning experiences for students and educators."*
 
 **Why NeuroScope fits:**
-- NeuroScope helps **students** understand ML model architectures visually
-- It helps **educators** teach deep learning with interactive 3D demonstrations
+- NeuroScope helps **students** learn deep learning by building models visually — no coding required
+- It helps **educators** teach ML concepts with an interactive drag-and-drop builder and 3D visualization
 - It's **inclusive** — free, browser-based, works on any device with a browser
-- It's **sustainable** — MIT license, open source, community-driven, university partnerships
-- It's **efficient** — automated architecture analysis replaces hours of manual debugging
+- It's **sustainable** — MIT license, open source, community-driven, offline-capable
+- It's **efficient** — visual building replaces hours of boilerplate code, and every action teaches something
 
 ---
 

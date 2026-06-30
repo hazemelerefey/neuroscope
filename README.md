@@ -1,85 +1,118 @@
-# 🧠 NeuroScope
+<p align="center">
+  <img src="https://img.shields.io/badge/🧠-NeuroScope-1a1a2e?style=for-the-badge&labelColor=1a1a2e&color=6c6c8a" alt="NeuroScope">
+</p>
 
-> **AI-Powered 3D Neural Network Architecture Visualizer & Analyzer**
-> Upload any model → See it in 3D → Understand what's wrong → Learn why it matters
+<h1 align="center">NeuroScope</h1>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
-[![Node 18+](https://img.shields.io/badge/node-18+-green.svg)](https://nodejs.org)
-[![Status: In Development](https://img.shields.io/badge/status-in%20development-yellow.svg)](#)
+<p align="center">
+  <strong>Visual Deep Learning Builder</strong><br>
+  Build ML/DL models by dragging, dropping, and connecting — no coding required.<br>
+  Every action teaches something. Export a clean notebook. Run it anywhere.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/status-in%20development-yellow.svg" alt="In Development">
+  <img src="https://img.shields.io/badge/offline-capable-brightgreen.svg" alt="Offline Capable">
+  <img src="https://img.shields.io/badge/languages-5-blue.svg" alt="5 Languages">
+</p>
 
 ---
 
-## 🎯 What is NeuroScope?
+## What is NeuroScope?
 
-NeuroScope is an **open-source** tool that helps ML students and developers **understand, visualize, and debug** neural network architectures. Upload a model file and instantly see it rendered as an interactive 3D scene — with automated analysis that catches common architecture mistakes.
+NeuroScope is an **open-source visual builder** for deep learning and machine learning models. Instead of writing code line by line, you **drag components onto a canvas, connect them, and configure options through guided panels** — while the tool explains what every choice does and why it matters.
 
-**Works online and offline.** NeuroScope can be downloaded and run locally, making it accessible to students in areas with weak or no internet connectivity across Africa.
+The model appears on screen as a **3D machine**: layers are connected blocks, extensions like optimizers and loss functions orbit the core engine with visible cables. When you're done, you export a **clean, production-ready Jupyter notebook** or Python file — code you understand because you chose every piece.
 
-### Core Features
+> NeuroScope doesn't run your code. It **builds** your code. You take it to Colab, add your dataset, and run.
+
+---
+
+## The Problem We Solve
+
+Every year, millions of students across Africa begin learning ML/DL. They attend lectures, study theory, and watch tutorials. But when they sit down to build their first model, they face a wall. The gap between understanding what a convolutional layer is and actually writing one is enormous. Most students never cross it.
+
+Existing tools don't help. Netron shows static diagrams. TensorBoard monitors training. Neither teaches you how to **build**. They show you the machine after it's built. They don't teach you how to build it.
+
+**NeuroScope is the tool we needed — so we built it.**
+
+---
+
+## Core Features
 
 | Feature | Description |
 |---------|-------------|
-| 🎮 **3D Visualization** | Interactive Three.js rendering of your model architecture with click-to-inspect |
-| 🔍 **Architecture Linter** | 47+ anti-pattern detection rules across layer, architecture, and efficiency categories |
-| 📊 **FLOPs & Memory** | Per-layer computation cost and memory footprint estimation |
-| 📁 **Multi-Format Support** | ONNX, PyTorch, Keras, TensorFlow, TensorFlow Lite |
-| 📖 **Educational Content** | Plain-language descriptions of what each layer does and common mistakes |
-| 🌍 **Multilingual** | English, French, Arabic, Swahili, Portuguese |
-| 🐳 **Docker Ready** | Docker Compose setup for easy local deployment |
-| 📥 **Offline Capable** | Desktop application for Windows and Mac — no internet required |
+| 🎮 **Drag & Drop Builder** | Assemble models visually by placing and connecting components on a canvas |
+| 🏗️ **3D Machine View** | Your model appears as a 3D machine — layers are blocks, extensions orbit with cables |
+| 📖 **Learn As You Build** | Every option includes plain-language explanations, when to use it, and what happens if misconfigured |
+| 📓 **Notebook Export** | Output a ready-to-run `.ipynb` or `.py` — clean, annotated, production-ready code |
+| 🧩 **7 Extensions** | Optimizer, Activation, Loss, Learning Rate, Batch Size, Epochs, Augmentation |
+| 🔧 **Develop Mode** | Inspect code, freeze/unfreeze layers, modify architectures at a granular level |
+| 🌐 **Web + Desktop** | Browser-based web app + desktop app (online/offline) |
+| 🌍 **5 Languages** | English, French, Arabic, Swahili, Portuguese |
 
 ---
 
-## 🚀 Deliverables
+## First Model: CNN v16
 
-NeuroScope is an ecosystem of tools designed to meet students wherever they work:
+The launch model is a 16-layer Convolutional Neural Network with **7 configurable extensions**:
 
-| # | Deliverable | Status | Description |
-|---|-------------|--------|-------------|
-| 1 | **Web Application** | ✅ Current Release | Browser-based platform for model upload, 3D visualization, analysis, and reporting |
-| 2 | **VS Code Extension** | 🔄 Update | Real-time code visualization inside VS Code — architecture renders in a 3D panel, updating live with every edit |
-| 3 | **AI Agent Plugins** | 🔄 Update | Integrations for Claude, GitHub Copilot, and other LLM agents — turns any AI assistant into an architecture-aware code reviewer |
-| 4 | **Desktop Application** | 🔄 Update | Standalone app for Windows and Mac — downloads and runs locally, completely offline |
+| Extension | Options | What It Does |
+|-----------|---------|--------------|
+| ⚡ **Optimizer** | SGD, Adam, AdamW, RMSprop | How the model updates its weights |
+| 🔥 **Activation** | ReLU, LeakyReLU, SiLU, Mish, GELU | Adds non-linearity for complex pattern learning |
+| 💚 **Loss Function** | CrossEntropy, FocalLoss, LabelSmoothing | Measures prediction error |
+| 📈 **Learning Rate** | 0.1, 0.01, 0.001, 0.0001 | Step size for weight updates |
+| 📦 **Batch Size** | 8, 16, 32, 64, 128 | Samples per training step |
+| 🔄 **Epochs** | 50, 100, 200, 500 | Full dataset passes |
+| 🟣 **Augmentation** | None, Basic, Advanced, Custom | Data expansion strategies |
 
-### Roadmap Progression
+Each option includes educational content: what it is, when to use it, consequences of misconfiguration, and the code it generates.
 
-```
-Web Application (Current) → VS Code Extension → AI Agent Plugins → Desktop Application
-```
+### Roadmap
 
-This is a **progression of features**, not a hierarchy. Each update builds on the previous to cover all student needs — from browser-based access to fully offline desktop use.
+| Model | Type | Status |
+|-------|------|--------|
+| CNN v16 | Image Classification | ✅ Current |
+| YOLO | Object Detection | 📋 Planned |
+| ResNet | Image Classification | 📋 Planned |
+| EfficientNet | Efficient Classification | 📋 Planned |
+| Classical ML | SVM, Random Forest, XGBoost | 📋 Planned |
 
 ---
 
-## 🚀 Quick Start
+## Product Platform
 
-### Option 1: Docker (Recommended)
+| Platform | Status | Description |
+|----------|--------|-------------|
+| **Web Application** | ✅ Current | Browser-based visual builder — no installation required |
+| **Desktop Application** | 🔄 In Progress | Windows + Mac — works online and offline |
+| **VS Code Extension** | 📋 Planned | Build and run models directly inside VS Code |
+
+---
+
+## Quick Start
+
+### Docker (Recommended)
 
 ```bash
-# Clone the repo
 git clone https://github.com/hazemelerefey/neuroscope.git
 cd neuroscope
-
-# Start with Docker Compose
 docker-compose up --build
 ```
 
-- Backend: `http://localhost:8000`
 - Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
 
-### Option 2: Run Locally
+### Local Development
 
 ```bash
-# Clone the repo
-git clone https://github.com/hazemelerefey/neuroscope.git
-cd neuroscope
-
 # Backend
 pip install -r requirements.txt
 uvicorn src.main:app --reload
 
-# Frontend (new terminal)
+# Frontend (separate terminal)
 cd frontend
 npm install
 npm run dev
@@ -87,126 +120,103 @@ npm run dev
 
 ---
 
-## 📁 Project Structure
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/models` | GET | List available model families |
+| `/api/models/{family}/{version}` | GET | Full model definition (layers, extensions, options) |
+| `/api/export/notebook` | POST | Generate Jupyter notebook from visual config |
+| `/api/export/yaml` | POST | Generate model YAML from visual config |
+| `/api/educational/{topic}` | GET | Educational content for DL topics |
+
+---
+
+## Project Structure
 
 ```
 neuroscope/
-├── src/                      # Python backend (FastAPI)
-│   ├── parsers/              # Model file parsers
-│   │   └── onnx_parser.py   # ONNX parser (implemented)
-│   ├── analysis/             # Architecture linter & stats
-│   │   ├── rules/            # Anti-pattern detection rules (47+ rules)
-│   │   ├── flops.py          # FLOPs calculator
-│   │   └── memory.py         # Memory estimator
-│   ├── graph/                # Internal graph representation
-│   ├── api/                  # FastAPI routes
-│   │   └── routes/           # upload, analyze, export, compare
-│   └── main.py               # FastAPI entry point
+├── src/                          # Python backend (FastAPI)
+│   ├── data/models/              # Model definitions (CNN v16 JSON)
+│   ├── api/routes/               # API endpoints
+│   │   ├── models.py             # Model family/version definitions
+│   │   ├── export.py             # Notebook & YAML generation
+│   │   └── educational.py        # DL educational content
+│   └── main.py                   # FastAPI entry point
 │
-├── frontend/                 # React + Three.js web app
+├── frontend/                     # React + Three.js web app
 │   └── src/
-│       ├── components/       # UI components (UploadZone, Canvas3D, etc.)
-│       ├── hooks/            # React hooks
-│       └── main.tsx          # Entry point
+│       ├── components/           # UI components
+│       │   ├── Canvas3D.tsx      # 3D machine visualization
+│       │   ├── ModelSelector.tsx # Model family/version/size picker
+│       │   ├── ExtensionConfig.tsx # Extension option panels
+│       │   ├── NotebookWindow.tsx  # Live code preview
+│       │   ├── DevelopMode.tsx   # Layer inspector
+│       │   └── InfoPanel.tsx     # Model summary panel
+│       ├── store.ts              # Zustand state management
+│       └── types.ts              # TypeScript type definitions
 │
-├── config/                   # Configuration files
-│   ├── analysis_rules.yaml   # Linter rules & thresholds
-│   ├── layer_shapes.yaml     # Layer → 3D shape mapping
-│   └── languages/            # i18n (EN, FR, AR, SW, PT)
+├── config/                       # Configuration
+│   ├── builder_rules.yaml        # Validation rules (warn on common mistakes)
+│   ├── layer_shapes.yaml         # Layer → 3D shape mapping
+│   └── languages/                # i18n (EN, FR, AR, SW, PT)
 │
-├── docker/                   # Dockerfiles
-├── docs/                     # Documentation
-├── research/                 # Technical research reports
-├── competition/              # AYAIR 2026 submission materials
-├── tests/                    # Test suite
-├── docker-compose.yml        # Docker Compose config
-└── requirements.txt          # Python dependencies
+├── docs/                         # Documentation
+│   ├── brd/                      # Business Requirements Document
+│   ├── prd/                      # Product Requirements Document
+│   └── technical/                # Technical Architecture + Frontend Guide
+│
+├── competition/                  # AYAIR 2026 submission materials
+├── tests/                        # Test suite
+├── docker-compose.yml            # Docker config
+└── requirements.txt              # Python dependencies
 ```
 
 ---
 
-## 🏗️ How It Works
-
-```
-Upload Model File (.onnx, .pt, .h5, .tflite)
-        │
-        ▼
-┌─────────────┐     ┌──────────────┐     ┌───────────────┐
-│   PARSER    │────▶│ GRAPH BUILDER│────▶│   ANALYZER    │
-│  (Extract   │     │  (Nodes +    │     │  (47+ rules:  │
-│   layers)   │     │   Edges)     │     │   FLOPs +     │
-└─────────────┘     └──────────────┘     │   Memory)     │
-                                          └───────┬───────┘
-                                                  │
-                    ┌─────────────────────────────┼──────────┐
-                    ▼                             ▼          ▼
-             ┌──────────┐              ┌──────────┐  ┌──────────┐
-             │  3D View │              │ Analysis │  │  Stats   │
-             │ (Three.js│              │ Panel    │  │ (FLOPs/  │
-             └──────────┘              └──────────┘  │  Memory) │
-                                                     └──────────┘
-```
-
----
-
-## 🎓 Category: Education Enhancement
+## AYAIR 2026 — Education Enhancement
 
 NeuroScope is submitted to the **Presidential African Youth in AI and Robotics Competition 2026** under the **Education Enhancement** category.
 
 > *"Initiatives using AI or robotics to inclusively, sustainably and efficiently improve educational offering and learning experiences for students and educators."*
 
-### Why NeuroScope Matters for Africa
+### Why It Matters for Africa
 
-- **Free & Open Source** — No cost barrier, MIT License
-- **Browser-Based** — No GPU, no installation, works on any device
-- **Offline Capable** — Desktop application for areas with weak internet
-- **Automated Guidance** — Catches common mistakes where no senior ML engineer is available
-- **Educational** — Every layer has a plain-language explanation
-- **Deployable** — Docker setup for institutions to run locally
+- **Free & Open Source** — MIT License, no cost barrier
+- **No Coding Required** — visual builder lowers the entry barrier
+- **Learn By Doing** — every component teaches what it does
+- **Offline Capable** — desktop app works without internet
+- **Clean Output** — exported notebooks teach proper code structure
+- **Deployable** — Docker setup for universities
 
 ### Language Support
 
 | Language | Region | Speakers |
 |----------|--------|----------|
-| Arabic | Egypt, North Africa, Middle East | 400M+ |
-| French | West & Central Africa | 300M+ |
-| English | East & Southern Africa, Global | 1.5B+ |
-| Swahili | East Africa (Kenya, Tanzania, Rwanda) | 100M+ |
-| Portuguese | Lusophone Southern Africa | 250M+ |
+| 🇪🇬 Arabic | Egypt, North Africa, Middle East | 400M+ |
+| 🇫🇷 French | West & Central Africa | 300M+ |
+| 🇬🇧 English | East & Southern Africa, Global | 1.5B+ |
+| 🇰🇪 Swahili | East Africa (Kenya, Tanzania, Rwanda) | 100M+ |
+| 🇵🇹 Portuguese | Lusophone Southern Africa | 250M+ |
 
 ---
 
-## 👥 Team: DigiNeurons
+## Team — DigiNeurons
 
-| Name | Role | Track |
-|------|------|-------|
-| **Hazem Khaled** | Team Leader · Deep Learning Engineer | Data Analysis |
-| Ahmed Ali | Data Scientist | Data Science |
-| Mohamed Abdel Ghani | Data Scientist | Data Science |
-| Yossef Shrif | Data Analyst | Data Analysis |
-| Yomna Ashraf | Data Analyst | Data Analysis |
-| Shahd Khairy | Frontend Developer | Software |
-| Mohamed Wagdi | Backend Developer | Software |
-| Ziad Mohamed | Backend Developer | Software |
-| Yossef Safout | Backend Developer | Software |
-
----
-
-## 📅 Development Timeline
-
-| Date | Milestone | Status |
-|------|-----------|--------|
-| **Jun 2026** | ONNX parser + 3D visualization + 47+ analysis rules | ✅ Done |
-| **Jul 2026** | PyTorch/Keras parsers + export features | 🚧 In Progress |
-| **Aug 2026** | VS Code Extension + AI Agent Plugins | 📋 Planned |
-| **Sep 2026** | Desktop Application (Windows/Mac) + polish | 📋 Planned |
-| **Oct 2026** | Finals (if selected) | 📋 Planned |
+| # | Name | Role | Track |
+|---|------|------|-------|
+| 1 | **Hazem Khaled** | Team Leader · Data Analyst | Data Analysis |
+| 2 | Yomna Ashraf | Data Analyst | Data Analysis |
+| 3 | Yossef Shrif | Data Analyst | Data Analysis |
+| 4 | Shahd Khairy | Frontend Developer | Software |
+| 5 | Mohamed Wagdi | Backend Developer | Software |
+| 6 | Ziad Mohamed | Backend Developer | Software |
+| 7 | Yossef Safout | Backend Developer | Software |
+| 8 | Mohamed Abdel Ghani | Data Scientist | Data Science |
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! Here's how to get started:
+## Contributing
 
 1. **Fork** the repository
 2. **Create** a feature branch (`git checkout -b feature/my-feature`)
@@ -216,30 +226,31 @@ We welcome contributions! Here's how to get started:
 
 ### Areas Where Help is Needed
 
-- Implementing PyTorch/Keras/TFLite parsers
-- Adding new analysis rules
-- Improving 3D visualization
-- Writing educational layer descriptions
-- Adding translations for new languages
+- Adding new model builders (YOLO, ResNet, EfficientNet)
+- Improving 3D machine visualization
+- Writing educational component descriptions
+- Adding translations
 - Desktop application development (Electron)
 
 ---
 
-## 📄 License
+## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- [ONNX](https://onnx.ai/) — Universal model format
 - [Three.js](https://threejs.org/) — 3D WebGL rendering
+- [React Three Fiber](https://docs.pmnd.rs/react-three-fiber/) — React renderer for Three.js
 - [FastAPI](https://fastapi.tiangolo.com/) — Backend framework
 - [React](https://react.dev/) — Frontend framework
+- [Electron](https://www.electronjs.org/) — Desktop application framework
 
 ---
 
 <p align="center">
-  Made with ❤️ for African ML students and developers
+  Made with ❤️ by <strong>DigiNeurons</strong> for African ML students and developers<br>
+  <sub>🧠 NeuroScope — Learn by building, not by reading.</sub>
 </p>

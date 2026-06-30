@@ -56,17 +56,16 @@ Dear AYAIR 2026 Team,
 Please find attached the project paper for NeuroScope, submitted by the DigiNeurons team for the Education Enhancement category.
 
 Team Members:
-1. Hazem Khaled — Team Leader · Deep Learning Engineer
-2. Ahmed Ali — Data Scientist
-3. Mohamed Abdel Ghani — Data Scientist
-4. Yossef Shrif — Data Analyst
-5. Yomna Ashraf — Data Analyst
-6. Shahd Khairy — Frontend Developer
-7. Mohamed Wagdi — Backend Developer
-8. Ziad Mohamed — Backend Developer
-9. Yossef Safout — Backend Developer
+1. Hazem Khaled — Team Leader · Data Analyst
+2. Yomna Ashraf — Data Analyst
+3. Yossef Shrif — Data Analyst
+4. Shahd Khairy — Frontend Developer
+5. Mohamed Wagdi — Backend Developer
+6. Ziad Mohamed — Backend Developer
+7. Yossef Safout — Backend Developer
+8. Mohamed Abdel Ghani — Data Science
 
-Project: NeuroScope — AI-Powered 3D Neural Network Architecture Visualizer and Analyzer
+Project: NeuroScope — Visual Deep Learning Builder
 Category: Education Enhancement
 
 Best regards,

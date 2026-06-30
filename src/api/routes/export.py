@@ -1,418 +1,328 @@
 """
-Export API Route — Generate downloadable files from model analysis.
+Export API Route — Generate Jupyter notebooks and YAML from visual builder configurations.
 """
 
 import io
 import json
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-
-from src.graph import NeuroScopeGraph
-from src.analysis import AnalysisEngine
-from src.analysis.flops import calculate_flops
-from src.analysis.memory import estimate_memory
-from src.store import graph_store
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 router = APIRouter()
-
-analysis_engine = AnalysisEngine()
-
-
-class ExportRequest(BaseModel):
-    model_id: str
-    format: str  # "json", "png", "summary"
+limiter = Limiter(key_func=get_remote_address)
 
 
-def _get_graph(model_id: str) -> NeuroScopeGraph:
-    """
-    Retrieve a graph from the shared store.
-
-    Args:
-        model_id: The model identifier.
-
-    Returns:
-        NeuroScopeGraph.
-
-    Raises:
-        HTTPException 404: If model not found.
-    """
-    graph = graph_store.get(model_id)
-    if not graph:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Model not found: {model_id}. Upload it first.",
-        )
-    return graph
+class LayerConfig(BaseModel):
+    """A single layer in the user's visual model configuration."""
+    id: str
+    type: str
+    name: str
+    params: dict = {}
 
 
-def _export_json(graph: NeuroScopeGraph) -> StreamingResponse:
-    """
-    Export the full graph as JSON.
+class ExtensionChoice(BaseModel):
+    """User's choice for an extension (optimizer, loss, etc.)."""
+    extension_id: str
+    option_id: str
 
-    Includes nodes, edges, metadata, and analysis results.
 
-    Args:
-        graph: The model graph.
+class ExportNotebookRequest(BaseModel):
+    """Request to generate a Jupyter notebook from a visual configuration."""
+    model_family: str
+    model_version: str
+    model_name: str = "MyModel"
+    layers: list[LayerConfig]
+    extensions: list[ExtensionChoice]
+    num_classes: int = 10
+    input_shape: list[int] = [3, 224, 224]
 
-    Returns:
-        StreamingResponse with JSON content.
-    """
-    calculate_flops(graph)
-    report = analysis_engine.analyze(graph)
-    mem = estimate_memory(graph)
 
-    data = {
-        "model_name": graph.model_name,
-        "framework": graph.framework,
-        "architecture_type": graph.architecture_type,
-        "input_shapes": graph.input_shapes,
-        "output_shapes": graph.output_shapes,
-        "total_params": graph.total_params,
-        "total_flops": graph.total_flops,
-        "total_memory_bytes": graph.total_memory_bytes,
-        "nodes": [
-            {
-                "id": n.id,
-                "name": n.name,
-                "op_type": n.op_type,
-                "category": n.category,
-                "input_shapes": n.input_shapes,
-                "output_shapes": n.output_shapes,
-                "attributes": n.attributes,
-                "params": n.params,
-                "flops": n.flops,
-                "memory_bytes": n.memory_bytes,
-                "connections_in": n.connections_in,
-                "connections_out": n.connections_out,
-                "is_grouped": n.is_grouped,
-                "grouped_types": n.grouped_types,
-                "description": n.description,
-            }
-            for n in graph.nodes
-        ],
-        "edges": [
-            {
-                "source_id": e.source_id,
-                "target_id": e.target_id,
-                "edge_type": e.edge_type,
-                "label": e.label,
-            }
-            for e in graph.edges
-        ],
-        "analysis": {
-            "health_score": report.health_score,
-            "health_grade": report.health_grade,
-            "critical_count": report.critical_count,
-            "warning_count": report.warning_count,
-            "info_count": report.info_count,
-            "findings": [
-                {
-                    "severity": f.severity,
-                    "rule_id": f.rule_id,
-                    "title": f.title,
-                    "message": f.message,
-                    "fix": f.fix,
-                    "layer_ids": f.layer_ids,
-                    "category": f.category,
-                }
-                for f in report.findings
-            ],
-        },
-        "memory_estimate": mem,
-    }
+class ExportYamlRequest(BaseModel):
+    """Request to generate a YAML model configuration."""
+    model_family: str
+    model_version: str
+    model_name: str = "MyModel"
+    layers: list[LayerConfig]
+    extensions: list[ExtensionChoice]
+    num_classes: int = 10
+    input_shape: list[int] = [3, 224, 224]
 
-    content = json.dumps(data, indent=2, default=str)
-    filename = f"{graph.model_name}_export.json"
 
-    return StreamingResponse(
-        io.BytesIO(content.encode("utf-8")),
-        media_type="application/json",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+def _build_imports_code() -> str:
+    """Generate the import statements for a notebook."""
+    return (
+        "import torch\n"
+        "import torch.nn as nn\n"
+        "import torch.optim as optim\n"
+        "import torchvision\n"
+        "import torchvision.transforms as transforms\n"
+        "from torch.utils.data import DataLoader\n"
     )
 
 
-def _export_png(graph: NeuroScopeGraph) -> StreamingResponse:
+def _build_model_class_code(layers: list[LayerConfig], head_code: str, num_classes: int) -> str:
+    """Generate the PyTorch model class code."""
+    lines = [
+        "",
+        "",
+        "class CustomModel(nn.Module):",
+        "    def __init__(self, num_classes):",
+        "        super().__init__()",
+        "",
+    ]
+
+    for layer in layers:
+        code = layer.params.get("code", f"# {layer.name}")
+        lines.append(f"        self.{layer.id} = {code}")
+
+    lines.append("")
+    lines.append(f"        self.head = nn.LazyLinear(num_classes)")
+    lines.append("")
+    lines.append("    def forward(self, x):")
+
+    # Build forward pass
+    for i, layer in enumerate(layers):
+        if i == 0:
+            lines.append(f"        x = self.{layer.id}(x)")
+        else:
+            lines.append(f"        x = self.{layer.id}(x)")
+
+    lines.append(f"        x = self.head(x)")
+    lines.append("        return x")
+    lines.append("")
+    lines.append(f"model = CustomModel(num_classes={num_classes})")
+    lines.append("print(model)")
+    return "\n".join(lines)
+
+
+def _build_extension_code(extensions: list[ExtensionChoice], model_data: dict) -> str:
+    """Generate code for chosen extensions (optimizer, loss, etc.)."""
+    lines = [""]
+
+    # Build a lookup from the model definition
+    ext_lookup: dict[str, dict] = {}
+    for ext in model_data.get("extensions", []):
+        for opt in ext.get("options", []):
+            ext_lookup[f"{ext['id']}:{opt['id']}"] = {
+                "code": opt.get("code", ""),
+                "name": opt.get("name", ""),
+                "ext_name": ext.get("name", ""),
+            }
+
+    for choice in extensions:
+        key = f"{choice.extension_id}:{choice.option_id}"
+        entry = ext_lookup.get(key)
+        if entry:
+            lines.append(f"# {entry['ext_name']}: {entry['name']}")
+            lines.append(entry["code"])
+        else:
+            lines.append(f"# Unknown extension choice: {key}")
+
+    return "\n".join(lines)
+
+
+def _build_training_loop_code() -> str:
+    """Generate a basic training loop."""
+    return """
+# Training loop
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+
+for epoch in range(num_epochs):
+    model.train()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    for images, labels in train_loader:
+        images, labels = images.to(device), labels.to(device)
+
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += labels.size(0)
+        correct += predicted.eq(labels).sum().item()
+
+    train_acc = 100.0 * correct / total
+    avg_loss = running_loss / len(train_loader)
+    print(f"Epoch [{epoch+1}/{num_epochs}] Loss: {avg_loss:.4f} Acc: {train_acc:.2f}%")
+"""
+
+
+@router.post("/export/notebook")
+@limiter.limit("20/minute")
+async def export_notebook(request: Request, body: ExportNotebookRequest):
     """
-    Export a PNG visualization of the model graph using matplotlib.
+    Generate a Jupyter notebook from a visual builder configuration.
 
-    Args:
-        graph: The model graph.
-
-    Returns:
-        StreamingResponse with PNG image.
-
-    Raises:
-        HTTPException 500: If matplotlib is not available.
+    The notebook includes:
+    - Imports
+    - Model class definition
+    - Extension code (optimizer, loss, etc.)
+    - Training loop
     """
     try:
-        import matplotlib
-
-        matplotlib.use("Agg")  # Non-interactive backend
-        import matplotlib.pyplot as plt
-        import matplotlib.patches as mpatches
+        import nbformat as nbf
     except ImportError:
         raise HTTPException(
             status_code=500,
-            detail="matplotlib is required for PNG export. Install with: pip install matplotlib",
+            detail="nbformat is required for notebook generation. Install with: pip install nbformat",
         )
 
-    # Category colors
-    colors = {
-        "convolution": "#4CAF50",
-        "linear": "#2196F3",
-        "activation": "#FF9800",
-        "pooling": "#9C27B0",
-        "normalization": "#00BCD4",
-        "reshape": "#607D8B",
-        "regularization": "#F44336",
-        "recurrent": "#795548",
-        "attention": "#E91E63",
-        "combination": "#CDDC39",
-        "embedding": "#3F51B5",
-        "other": "#9E9E9E",
-        "input": "#8BC34A",
-        "utility": "#BDBDBD",
+    # Load model definition to get extension code snippets
+    model_data = _load_model_definition(body.model_family, body.model_version)
+
+    nb = nbf.v4.new_notebook()
+    cells = []
+
+    # Title cell
+    cells.append(nbf.v4.new_markdown_cell(
+        f"# {body.model_name}\n"
+        f"Generated by NeuroScope Visual Deep Learning Builder\n\n"
+        f"**Architecture:** {body.model_family} v{body.model_version}  \n"
+        f"**Layers:** {len(body.layers)}  \n"
+        f"**Classes:** {body.num_classes}  \n"
+        f"**Input shape:** {body.input_shape}"
+    ))
+
+    # Imports
+    cells.append(nbf.v4.new_code_cell(_build_imports_code()))
+
+    # Model definition
+    head_code = model_data.get("head", {}).get("code", "nn.LazyLinear(num_classes)")
+    cells.append(nbf.v4.new_code_cell(
+        _build_model_class_code(body.layers, head_code, body.num_classes)
+    ))
+
+    # Extensions (optimizer, loss, etc.)
+    ext_code = _build_extension_code(body.extensions, model_data)
+    if ext_code.strip():
+        cells.append(nbf.v4.new_markdown_cell("## Training Configuration"))
+        cells.append(nbf.v4.new_code_cell(ext_code))
+
+    # Training loop
+    cells.append(nbf.v4.new_markdown_cell("## Training"))
+    cells.append(nbf.v4.new_code_cell(_build_training_loop_code()))
+
+    nb["cells"] = cells
+    nb["metadata"] = {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {
+            "name": "python",
+            "version": "3.10.0",
+        },
     }
 
-    fig, ax = plt.subplots(figsize=(max(12, len(graph.nodes) * 0.8), 6))
-
-    if not graph.nodes:
-        ax.text(0.5, 0.5, "Empty model", ha="center", va="center", fontsize=14)
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-    else:
-        n = len(graph.nodes)
-        x_positions = list(range(n))
-        y_center = 0.5
-
-        # Draw nodes
-        node_width = 0.6
-        node_height = 0.3
-        for i, node in enumerate(graph.nodes):
-            color = colors.get(node.category, "#9E9E9E")
-            rect = mpatches.FancyBboxPatch(
-                (i - node_width / 2, y_center - node_height / 2),
-                node_width,
-                node_height,
-                boxstyle="round,pad=0.02",
-                facecolor=color,
-                edgecolor="black",
-                linewidth=0.5,
-                alpha=0.85,
-            )
-            ax.add_patch(rect)
-
-            # Node label (truncated)
-            label = node.op_type[:8]
-            ax.text(
-                i, y_center, label,
-                ha="center", va="center",
-                fontsize=7, fontweight="bold", color="white",
-            )
-
-            # Layer name below
-            ax.text(
-                i, y_center - node_height / 2 - 0.05,
-                node.name[:12],
-                ha="center", va="top",
-                fontsize=5, color="#333",
-            )
-
-        # Draw edges
-        for edge in graph.edges:
-            x_start = edge.source_id
-            x_end = edge.target_id
-            edge_color = "#666"
-            if edge.edge_type == "residual":
-                edge_color = "#F44336"
-                # Draw arc above for residual connections
-                mid_x = (x_start + x_end) / 2
-                mid_y = y_center + node_height / 2 + 0.15
-                ax.annotate(
-                    "",
-                    xy=(x_end, y_center + node_height / 2),
-                    xytext=(x_start, y_center + node_height / 2),
-                    arrowprops=dict(
-                        arrowstyle="->",
-                        color=edge_color,
-                        connectionstyle=f"arc3,rad=0.3",
-                        linewidth=1.0,
-                    ),
-                )
-            else:
-                ax.annotate(
-                    "",
-                    xy=(x_end - node_width / 2, y_center),
-                    xytext=(x_start + node_width / 2, y_center),
-                    arrowprops=dict(
-                        arrowstyle="->",
-                        color=edge_color,
-                        linewidth=0.8,
-                    ),
-                )
-
-        ax.set_xlim(-0.5, n - 0.5)
-        ax.set_ylim(-0.2, 1.0)
-        ax.set_aspect("equal")
-        ax.axis("off")
-
-    # Title
-    ax.set_title(
-        f"NeuroScope: {graph.model_name} ({graph.framework})",
-        fontsize=12,
-        fontweight="bold",
-        pad=10,
-    )
-
-    # Legend (top-right)
-    used_categories = set(n.category for n in graph.nodes)
-    legend_handles = [
-        mpatches.Patch(color=colors.get(cat, "#9E9E9E"), label=cat)
-        for cat in sorted(used_categories)
-    ]
-    if legend_handles:
-        ax.legend(
-            handles=legend_handles,
-            loc="upper right",
-            fontsize=6,
-            framealpha=0.9,
-        )
-
-    plt.tight_layout()
-
-    # Save to buffer
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    buf.seek(0)
-
-    filename = f"{graph.model_name}_graph.png"
-
-    return StreamingResponse(
-        buf,
-        media_type="image/png",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
-    )
-
-
-def _export_summary(graph: NeuroScopeGraph) -> StreamingResponse:
-    """
-    Export a human-readable text summary of the model and its analysis.
-
-    Args:
-        graph: The model graph.
-
-    Returns:
-        StreamingResponse with plain text content.
-    """
-    calculate_flops(graph)
-    report = analysis_engine.analyze(graph)
-    mem = estimate_memory(graph)
-
-    lines = [
-        "=" * 60,
-        f"  NeuroScope Model Analysis Report",
-        "=" * 60,
-        "",
-        f"Model:         {graph.model_name}",
-        f"Framework:     {graph.framework}",
-        f"Architecture:  {graph.architecture_type}",
-        "",
-        "-" * 60,
-        "  Summary Statistics",
-        "-" * 60,
-        f"Layers:        {len(graph.nodes)}",
-        f"Parameters:    {graph.total_params:,}",
-        f"FLOPs:         {graph.total_flops:,}",
-        f"Memory:        {mem['total_mb']:.2f} MB",
-        f"GPU Memory:    {mem['gpu_memory_gb']:.2f} GB (est.)",
-        "",
-        f"Health Score:  {report.health_score}/100 (Grade: {report.health_grade})",
-        f"  Critical:    {report.critical_count}",
-        f"  Warnings:    {report.warning_count}",
-        f"  Info:        {report.info_count}",
-        "",
-    ]
-
-    # Layer breakdown
-    if graph.nodes:
-        lines.append("-" * 60)
-        lines.append("  Layer Details")
-        lines.append("-" * 60)
-        for node in graph.nodes:
-            params_str = node.formatted_params
-            lines.append(
-                f"  [{node.id:3d}] {node.name:<30s} {node.op_type:<20s} "
-                f"params={params_str}"
-            )
-        lines.append("")
-
-    # Findings
-    if report.findings:
-        lines.append("-" * 60)
-        lines.append("  Analysis Findings")
-        lines.append("-" * 60)
-        for f in report.findings:
-            lines.append(f"  {f.icon} [{f.severity}] {f.title}")
-            lines.append(f"     Rule: {f.rule_id}")
-            lines.append(f"     {f.message}")
-            lines.append(f"     Fix: {f.fix}")
-            if f.layer_ids:
-                lines.append(f"     Layers: {f.layer_ids}")
-            lines.append("")
-
-    lines.append("=" * 60)
-    lines.append("  Generated by NeuroScope — AI-Powered 3D NN Visualizer")
-    lines.append("=" * 60)
-
-    content = "\n".join(lines)
-    filename = f"{graph.model_name}_report.txt"
+    content = nbf.writes(nb)
+    filename = f"{body.model_name.replace(' ', '_')}.ipynb"
 
     return StreamingResponse(
         io.BytesIO(content.encode("utf-8")),
-        media_type="text/plain",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        media_type="application/x-ipynb+json",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
-@router.post("/export")
-async def export_model(request: ExportRequest):
+@router.post("/export/yaml")
+@limiter.limit("20/minute")
+async def export_yaml(request: Request, body: ExportYamlRequest):
     """
-    Export model visualization or analysis report.
+    Generate a YAML model configuration from a visual builder setup.
 
-    Supported formats:
-        - json: Full graph data with analysis results
-        - png: Graph visualization rendered with matplotlib
-        - summary: Human-readable text report
-
-    Args:
-        request: ExportRequest with model_id and format.
-
-    Returns:
-        StreamingResponse with the exported file.
-
-    Raises:
-        HTTPException 400: If format is unsupported.
-        HTTPException 404: If model is not found.
+    Produces a structured YAML file describing the model architecture,
+    layer configurations, and training hyperparameters.
     """
-    graph = _get_graph(request.model_id)
-
-    format_lower = request.format.lower()
-
-    if format_lower == "json":
-        return _export_json(graph)
-    elif format_lower == "png":
-        return _export_png(graph)
-    elif format_lower == "summary":
-        return _export_summary(graph)
-    else:
+    try:
+        import yaml
+    except ImportError:
         raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Unsupported export format: '{request.format}'. "
-                f"Available: json, png, summary"
-            ),
+            status_code=500,
+            detail="pyyaml is required for YAML export. Install with: pip install pyyaml",
         )
+
+    model_data = _load_model_definition(body.model_family, body.model_version)
+
+    # Build extension lookup
+    ext_lookup: dict[str, dict] = {}
+    for ext in model_data.get("extensions", []):
+        for opt in ext.get("options", []):
+            ext_lookup[f"{ext['id']}:{opt['id']}"] = {
+                "code": opt.get("code", ""),
+                "name": opt.get("name", ""),
+                "ext_name": ext.get("name", ""),
+            }
+
+    # Build YAML structure
+    config = {
+        "model": {
+            "name": body.model_name,
+            "family": body.model_family,
+            "version": body.model_version,
+            "num_classes": body.num_classes,
+            "input_shape": body.input_shape,
+        },
+        "layers": [
+            {
+                "id": layer.id,
+                "type": layer.type,
+                "name": layer.name,
+                "params": {k: v for k, v in layer.params.items() if k != "code"},
+            }
+            for layer in body.layers
+        ],
+        "training": {},
+    }
+
+    # Add extension choices
+    for choice in body.extensions:
+        key = f"{choice.extension_id}:{choice.option_id}"
+        entry = ext_lookup.get(key)
+        if entry:
+            config["training"][entry["ext_name"].lower().replace(" ", "_")] = {
+                "choice": entry["name"],
+                "code": entry["code"],
+            }
+
+    content = yaml.dump(config, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    filename = f"{body.model_name.replace(' ', '_')}_config.yaml"
+
+    return StreamingResponse(
+        io.BytesIO(content.encode("utf-8")),
+        media_type="application/x-yaml",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _load_model_definition(family: str, version: str) -> dict:
+    """Load a model definition JSON by family and version."""
+    from pathlib import Path
+
+    models_dir = Path(__file__).resolve().parent.parent.parent / "data" / "models"
+    if not models_dir.exists():
+        raise HTTPException(status_code=500, detail="Models directory not found")
+
+    for f in models_dir.glob("*.json"):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            if data.get("family", "").lower() == family.lower() and data.get("version") == version:
+                return data
+        except (json.JSONDecodeError, KeyError):
+            continue
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Model definition not found: {family} v{version}",
+    )

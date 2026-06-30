@@ -1,64 +1,186 @@
-import { useMemo } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { useMemo, useRef } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera, Html, Line } from '@react-three/drei'
-import { Color, Vector3 } from 'three'
-import type { GraphData, LayerNode } from '../types'
+import { Color, type Group } from 'three'
+import { useStore } from '../store'
+import type { Extension, SelectedModel } from '../types'
 
-interface Canvas3DProps {
-  graphData: GraphData
-  onLayerClick: (layer: LayerNode) => void
+// ─── Empty state: + button ────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <Html center>
+      <div
+        className="empty-canvas"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 12,
+          userSelect: 'none',
+        }}
+      >
+        <div
+          className="plus-button"
+          onClick={() => {
+            // Trigger right panel to show model selector
+            useStore.getState().setRightPanelTab('model')
+          }}
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            border: '2px dashed rgba(99,102,241,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            fontSize: 36,
+            color: 'rgba(99,102,241,0.7)',
+            transition: 'all 0.2s',
+            background: 'rgba(99,102,241,0.05)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.border = '2px solid rgba(99,102,241,0.8)'
+            e.currentTarget.style.background = 'rgba(99,102,241,0.1)'
+            e.currentTarget.style.transform = 'scale(1.05)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.border = '2px dashed rgba(99,102,241,0.5)'
+            e.currentTarget.style.background = 'rgba(99,102,241,0.05)'
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
+          +
+        </div>
+        <p style={{ color: '#64748b', fontSize: 14, fontFamily: 'Inter, sans-serif' }}>
+          Select a model to begin
+        </p>
+      </div>
+    </Html>
+  )
 }
 
-// Layer type → 3D shape + color mapping
-const LAYER_STYLES: Record<string, { color: string; geometry: string }> = {
-  convolution: { color: '#6366f1', geometry: 'box' },
-  linear: { color: '#8b5cf6', geometry: 'plane' },
-  pooling: { color: '#06b6d4', geometry: 'small_cube' },
-  activation: { color: '#f59e0b', geometry: 'sphere' },
-  normalization: { color: '#10b981', geometry: 'slab' },
-  reshape: { color: '#ec4899', geometry: 'cone' },
-  regularization: { color: '#ef4444', geometry: 'wireframe' },
-  recurrent: { color: '#14b8a6', geometry: 'cylinder' },
-  attention: { color: '#f97316', geometry: 'octahedron' },
-  combination: { color: '#84cc16', geometry: 'merge' },
-}
+// ─── Core engine block ────────────────────────────────────────────
 
-function LayerMesh({ node, position, onClick }: {
-  node: LayerNode
-  position: [number, number, number]
-  onClick: (layer: LayerNode) => void
-}) {
-  const style = LAYER_STYLES[node.category] || { color: '#64748b', geometry: 'box' }
-  const color = new Color(style.color)
+function CoreEngine({ model }: { model: SelectedModel }) {
+  const ref = useRef<Group>(null!)
+  const complexity = model.size.complexity
+  const baseScale = 0.5 + complexity * 0.15
 
-  const getGeometry = () => {
-    switch (style.geometry) {
-      case 'sphere':
-        return <sphereGeometry args={[0.4, 16, 16]} />
-      case 'cylinder':
-        return <cylinderGeometry args={[0.3, 0.3, 0.8, 16]} />
-      case 'cone':
-        return <coneGeometry args={[0.3, 0.8, 16]} />
-      case 'octahedron':
-        return <octahedronGeometry args={[0.4]} />
-      case 'plane':
-        return <boxGeometry args={[1.2, 0.1, 0.8]} />
-      case 'small_cube':
-        return <boxGeometry args={[0.4, 0.4, 0.4]} />
-      case 'slab':
-        return <boxGeometry args={[1.0, 0.1, 0.6]} />
-      default:
-        return <boxGeometry args={[0.8, 0.8, 0.8]} />
+  useFrame((_, delta) => {
+    if (ref.current) {
+      ref.current.rotation.y += delta * 0.2
     }
-  }
+  })
+
+  const color = new Color(
+    model.family.id === 'cnn' ? '#6366f1' :
+    model.family.id === 'yolo' ? '#f59e0b' :
+    model.family.id === 'resnet' ? '#10b981' :
+    model.family.id === 'transformer' ? '#8b5cf6' :
+    model.family.id === 'gan' ? '#ec4899' : '#06b6d4'
+  )
 
   return (
-    <group position={position}>
-      <mesh onClick={() => onClick(node)}>
-        {getGeometry()}
-        <meshStandardMaterial color={color} transparent opacity={0.85} />
+    <group ref={ref}>
+      {/* Main block */}
+      <mesh>
+        <boxGeometry args={[baseScale, baseScale, baseScale]} />
+        <meshStandardMaterial
+          color={color}
+          transparent
+          opacity={0.85}
+          roughness={0.3}
+          metalness={0.6}
+        />
       </mesh>
-      <Html position={[0, 0.8, 0]} center style={{ pointerEvents: 'none' }}>
+
+      {/* Wireframe overlay */}
+      <mesh>
+        <boxGeometry args={[baseScale + 0.02, baseScale + 0.02, baseScale + 0.02]} />
+        <meshBasicMaterial color={color} wireframe transparent opacity={0.3} />
+      </mesh>
+
+      {/* Inner glow */}
+      <mesh>
+        <boxGeometry args={[baseScale * 0.6, baseScale * 0.6, baseScale * 0.6]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.5}
+          transparent
+          opacity={0.3}
+        />
+      </mesh>
+
+      <Html position={[0, baseScale * 0.6, 0]} center style={{ pointerEvents: 'none' }}>
+        <div style={{
+          color: '#f8fafc',
+          fontSize: 11,
+          fontFamily: 'Inter, sans-serif',
+          whiteSpace: 'nowrap',
+          textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+          textAlign: 'center',
+          userSelect: 'none',
+        }}>
+          <strong>{model.version.name}</strong>
+          <br />
+          <span style={{ fontSize: 9, opacity: 0.7 }}>{model.size.name} · {model.size.params}</span>
+        </div>
+      </Html>
+    </group>
+  )
+}
+
+// ─── Extension orbiting block ─────────────────────────────────────
+
+function ExtensionBlock({
+  extension,
+  index,
+  total,
+}: {
+  extension: Extension
+  index: number
+  total: number
+}) {
+  const ref = useRef<Group>(null!)
+  const selectExtension = useStore((s) => s.selectExtension)
+  const isSelected = useStore((s) => s.selectedExtensionKind === extension.kind)
+
+  const angle = (index / total) * Math.PI * 2
+  const radius = 3
+
+  useFrame((state, delta) => {
+    if (ref.current) {
+      const time = state.clock.elapsedTime
+      const dynamicAngle = angle + time * 0.1
+      ref.current.position.x = Math.cos(dynamicAngle) * radius
+      ref.current.position.z = Math.sin(dynamicAngle) * radius
+      ref.current.position.y = Math.sin(time * 0.5 + index) * 0.2
+      ref.current.rotation.y += delta * 0.3
+    }
+  })
+
+  const color = new Color(extension.color)
+  const hasSelection = extension.selectedOptionId !== null
+
+  return (
+    <group ref={ref}>
+      <mesh onClick={() => selectExtension(extension.kind)}>
+        <octahedronGeometry args={[hasSelection ? 0.35 : 0.25]} />
+        <meshStandardMaterial
+          color={color}
+          transparent
+          opacity={isSelected ? 1.0 : 0.7}
+          emissive={color}
+          emissiveIntensity={isSelected ? 0.5 : hasSelection ? 0.2 : 0}
+          roughness={0.4}
+          metalness={0.5}
+        />
+      </mesh>
+
+      <Html position={[0, 0.5, 0]} center style={{ pointerEvents: 'none' }}>
         <div style={{
           color: '#f8fafc',
           fontSize: 10,
@@ -67,105 +189,112 @@ function LayerMesh({ node, position, onClick }: {
           textShadow: '0 1px 3px rgba(0,0,0,0.8)',
           textAlign: 'center',
           userSelect: 'none',
+          opacity: isSelected ? 1 : 0.7,
         }}>
-          {node.display_type}
+          {extension.icon} {extension.label}
+          {hasSelection && (
+            <span style={{ display: 'block', fontSize: 8, color: extension.color, marginTop: 2 }}>
+              ✓ configured
+            </span>
+          )}
         </div>
       </Html>
     </group>
   )
 }
 
-function EdgeLine({ start, end, edgeType }: {
-  start: [number, number, number]
-  end: [number, number, number]
-  edgeType: string
-}) {
-  const color = edgeType === 'residual' ? '#10b981' :
-                edgeType === 'skip' ? '#f59e0b' : '#94a3b8'
+// ─── Cable from extension to core ─────────────────────────────────
 
-  // For skip/residual connections, draw a curved line
+function Cable({
+  index,
+  total,
+  color,
+}: {
+  index: number
+  total: number
+  color: string
+}) {
+  const _ref = useRef<Line>(null!)
+  const angle = (index / total) * Math.PI * 2
+  const radius = 3
+
   const points = useMemo(() => {
-    const s = new Vector3(...start)
-    const e = new Vector3(...end)
-    if (edgeType === 'skip' || edgeType === 'residual') {
-      // Arc upward for skip connections
-      const mid = new Vector3().lerpVectors(s, e, 0.5)
-      mid.y += 2.0
-      const curvePoints: [number, number, number][] = []
-      for (let t = 0; t <= 1; t += 0.1) {
-        const p = new Vector3()
-        // Quadratic bezier
-        const mt = 1 - t
-        p.x = mt * mt * s.x + 2 * mt * t * mid.x + t * t * e.x
-        p.y = mt * mt * s.y + 2 * mt * t * mid.y + t * t * e.y
-        p.z = mt * mt * s.z + 2 * mt * t * mid.z + t * t * e.z
-        curvePoints.push([p.x, p.y, p.z])
-      }
-      curvePoints.push(end)
-      return curvePoints
+    const pts: [number, number, number][] = []
+    const steps = 20
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps
+      const a = angle + (0.1 * 0) // static snapshot
+      const ex = Math.cos(a) * radius * t
+      const ez = Math.sin(a) * radius * t
+      const ey = Math.sin(0.5 + index) * 0.2 * t
+      pts.push([ex, ey, ez])
     }
-    return [start, end]
-  }, [start[0], start[1], start[2], end[0], end[1], end[2], edgeType])
+    return pts
+  }, [angle, radius, index])
 
   return (
     <Line
       points={points}
       color={color}
-      lineWidth={1.5}
-      dashed={edgeType === 'skip'}
+      lineWidth={1}
+      transparent
+      opacity={0.3}
+      dashed
+      dashSize={0.1}
+      gapSize={0.1}
     />
   )
 }
 
-export default function Canvas3D({ graphData, onLayerClick }: Canvas3DProps) {
-  const nodes = graphData?.nodes || []
-  const edges = graphData?.edges || []
+// ─── Main Canvas ──────────────────────────────────────────────────
 
-  // Calculate node positions (simple horizontal layout)
-  const nodePositions: Record<number, [number, number, number]> = {}
-  const spacing = 2.5
-  nodes.forEach((node, i) => {
-    nodePositions[node.id] = [i * spacing - (nodes.length * spacing) / 2, 0, 0]
-  })
+export default function Canvas3D() {
+  const selectedModel = useStore((s) => s.selectedModel)
+  const extensions = useStore((s) => s.extensions)
 
   return (
     <div className="canvas-3d" style={{ width: '100%', height: '100%' }}>
       <Canvas gl={{ antialias: true }} dpr={[1, 2]}>
-        <PerspectiveCamera makeDefault position={[0, 5, 15]} />
+        <PerspectiveCamera makeDefault position={[0, 4, 10]} />
         <OrbitControls enableDamping dampingFactor={0.05} />
 
         {/* Lighting */}
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
-        <pointLight position={[-10, -10, -5]} intensity={0.5} />
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} />
+        <pointLight position={[-10, -5, -5]} intensity={0.3} color="#8b5cf6" />
+        <pointLight position={[5, -10, 5]} intensity={0.3} color="#06b6d4" />
 
         {/* Grid */}
-        <gridHelper args={[50, 50, '#334155', '#1e293b']} />
+        <gridHelper args={[30, 30, '#1e293b', '#0f172a']} />
 
-        {/* Layers */}
-        {nodes.map((node) => (
-          <LayerMesh
-            key={node.id}
-            node={node}
-            position={nodePositions[node.id]}
-            onClick={onLayerClick}
-          />
-        ))}
+        {!selectedModel ? (
+          <EmptyState />
+        ) : (
+          <>
+            {/* Core engine */}
+            <CoreEngine model={selectedModel} />
 
-        {/* Edges */}
-        {edges.map((edge, i) => {
-          const start = nodePositions[edge.source_id]
-          const end = nodePositions[edge.target_id]
-          if (!start || !end) return null
-          return (
-            <EdgeLine
-              key={i}
-              start={[start[0] + 0.4, start[1], start[2]]}
-              end={[end[0] - 0.4, end[1], end[2]]}
-              edgeType={edge.edge_type}
-            />
-          )
-        })}
+            {/* Extensions orbiting */}
+            {extensions.map((ext, i) => (
+              <ExtensionBlock
+                key={ext.kind}
+                extension={ext}
+                index={i}
+                total={extensions.length}
+              />
+            ))}
+
+            {/* Cables from core to extensions */}
+            {extensions.map((ext, i) => (
+              <Cable
+                key={`cable-${ext.kind}`}
+                index={i}
+                total={extensions.length}
+                color={ext.color}
+              />
+            ))}
+          </>
+        )}
       </Canvas>
     </div>
   )

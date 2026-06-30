@@ -1,0 +1,326 @@
+# NeuroScope — Frontend Development Guide
+
+**For:** Shahd Khairy (Frontend Developer)
+**Date:** June 29, 2026
+**Stack:** React 18 + TypeScript + Three.js + React Three Fiber + Tailwind CSS
+
+---
+
+## Quick Start
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## Your Responsibilities
+
+1. **3D Workspace** — The main canvas where the model and extensions live
+2. **Core Engine** — The central 3D block that represents the model
+3. **Extension Blocks** — Satellite 3D blocks with cables
+4. **Configuration Panels** — Right-side panels for each extension
+5. **Info Panel** — Bottom bar showing model + config summary
+6. **Notebook Window** — Collapsible code viewer (top-right)
+7. **Model Selector** — Right panel + plus button
+8. **Develop Mode** — Layer editor view
+9. **Animations** — Glow, pulse, cable illumination
+10. **Export UI** — Download buttons
+
+---
+
+## Component Breakdown
+
+### 1. Workspace (Main Canvas)
+
+```
+┌─────────────────────────────────────────┐
+│                                         │
+│            3D CANVAS                    │
+│         (React Three Fiber)             │
+│                                         │
+│    ┌─────────┐                          │
+│    │ Core    │──── Extensions           │
+│    │ Engine  │                          │
+│    └─────────┘                          │
+│                                         │
+│                      ┌──────────────┐   │
+│                      │  Notebook    │   │
+│                      │  (Collapsed) │   │
+│                      └──────────────┘   │
+├─────────────────────────────────────────┤
+│  Info Panel: CNN v16 | Head: Softmax... │
+└─────────────────────────────────────────┘
+```
+
+**Key Points:**
+- Full viewport height/width
+- Black background (#000000)
+- React Three Fiber `<Canvas>` component
+- OrbitControls for camera (limited: no flip, zoom range 5-20)
+- Post-processing: Bloom effect for glow
+
+### 2. Core Engine (3D Block)
+
+**Visual:**
+- Metallic cube (2x2x2 units)
+- Surface: Custom shader with circuit lines (blue #00d4ff)
+- Model label: HTML overlay or 3D text
+- Head layer: Glowing ring on top
+
+**Animation:**
+- Power on: Scale 0→1 over 1.5s, opacity fade, glow pulse
+- Idle: Subtle floating motion (sin wave on Y axis)
+- Click: Scale up slightly (1.05x), show context menu
+
+**Interaction:**
+- Click → Context menu (Change Model, Custom/Develop Mode)
+- Hover → Slight glow increase
+
+### 3. Extension Blocks (Satellites)
+
+**Visual:**
+- Smaller cubes (1x1x1 units) orbiting the core engine
+- Category color border (green/purple/yellow)
+- Icon on front face
+- Name label below
+
+**States:**
+- Unconfigured: Dark material, dim cable, gray icon
+- Configured: Glowing material, bright cable, colored icon
+
+**Positioning:**
+- Evenly distributed around core engine (radius = 4 units)
+- Each extension at a fixed angle (360° / num_extensions)
+
+**Cable:**
+- CatmullRomCurve3 from extension to core engine
+- TubeGeometry (radius = 0.05)
+- Color matches category
+- Glow intensity based on configuration state
+
+### 4. Configuration Panel (Right Side)
+
+**Trigger:** Click an extension block
+
+**Animation:** Slide in from right (0.3s ease-out)
+
+**Layout:**
+```
+┌─────────────────────────────┐
+│  ← Back          ⚡ Optimizer│
+│                             │
+│  ○ SGD                      │
+│    Classic optimizer...     │
+│                             │
+│  ● AdamW          [ACTIVE]  │
+│    Decoupled weight decay...│
+│    ✓ Best for modern arch   │
+│    ⚠ More compute than Adam │
+│                             │
+│  ○ Adam                     │
+│    Adaptive learning rate...│
+│                             │
+│  ○ RMSprop                  │
+│    Running average...       │
+│                             │
+│         [Apply]             │
+└─────────────────────────────┘
+```
+
+**Behavior:**
+- Radio buttons for single-select options
+- Custom input for learning rate, batch size, epochs
+- Apply button → updates state, injects code, glows extension
+- Back button → closes panel, returns to workspace
+
+### 5. Info Panel (Bottom Bar)
+
+**Always visible** at the bottom of the screen.
+
+**Content:**
+- Model name + type
+- Head layer: activation function + output classes
+- Each configured extension: brief summary
+
+**Example:**
+```
+🧠 CNN v16 | 🎯 Head: Softmax (10 classes) | ⚡ AdamW | 📈 LR: 0.001 | 📦 Batch: 16 | 🔄 Epochs: 100
+```
+
+### 6. Notebook Window (Top-Right)
+
+**Default:** Collapsed (small tab: "📓 Notebook")
+
+**Auto-opens when:**
+- Model selected
+- Extension configured
+- Extension changed
+
+**Expanded view:**
+```
+┌──────────────────────────────┐
+│ 📓 Notebook            [—]   │
+│                              │
+│ # NeuroScope — CNN v16       │
+│ # Generated by NeuroScope    │
+│                              │
+│ import torch                 │
+│ import torch.nn as nn        │
+│                              │
+│ # Model Definition           │
+│ class CNNv16(nn.Module):     │
+│     def __init__(self):      │
+│         ...                  │
+│                              │
+│ # Optimizer                  │
+│ optimizer = 'AdamW'          │
+│                              │
+│ # Loss Function              │
+│ criterion = 'CrossEntropy'   │
+│                              │
+│ [Copy] [Download .ipynb]     │
+└──────────────────────────────┘
+```
+
+**Features:**
+- Syntax highlighting (use Prism.js or highlight.js)
+- Line numbers
+- Editable (contentEditable or Monaco editor)
+- Copy button
+- Download .ipynb button
+- Download .yaml button
+
+### 7. Model Selector
+
+**Plus Button:**
+- Centered in workspace when empty
+- Circular button with "+" icon
+- Hover: Glow effect
+- Click: Opens model menu
+
+**Right Panel (Model List):**
+- Collapsible panel on the right
+- Shows available model families
+- Currently: CNN v16 only
+- Click model → places it on workspace, panel hides
+- Drag model → drop on workspace
+
+### 8. Develop Mode
+
+**Trigger:** Click core engine → Custom
+
+**View:** Overlay or full-screen modal
+
+**Layout:**
+```
+┌─────────────────────────────────────────┐
+│  Develop Mode — CNN v16          [Close]│
+│                                         │
+│  ┌───────────────────────────────────┐  │
+│  │ Layer 1: Conv2d(3→64)    [🧊][🗑]│  │
+│  │ Layer 2: BatchNorm(64)   [🧊][🗑]│  │
+│  │ Layer 3: ReLU            [🧊][🗑]│  │
+│  │ ...                               │  │
+│  │ Layer 16: Head (Softmax) [⚠️]     │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+│  [Freeze All] [Unfreeze All] [Reset]    │
+└─────────────────────────────────────────┘
+```
+
+**Interactions:**
+- 🧊 Freeze/Unfreeze toggle per layer
+- 🗑️ Remove layer (except head)
+- Head layer: Always visible, cannot be removed, shows activation
+- Changes update the notebook code
+
+---
+
+## Tailwind Classes Reference
+
+### Colors
+```css
+--neuro-blue: #00d4ff      /* Core engine */
+--neuro-green: #00ff88     /* Training extensions */
+--neuro-purple: #b44dff    /* Data extensions */
+--neuro-yellow: #ffd700    /* Functional extensions */
+--neuro-dark: #0a0a0a      /* Background */
+--neuro-gray: #666666      /* Disabled */
+```
+
+### Common Classes
+```css
+/* Panel */
+bg-neuro-dark/90 backdrop-blur-md border border-neuro-blue/20 rounded-lg
+
+/* Button */
+bg-neuro-blue/10 hover:bg-neuro-blue/20 text-neuro-blue border border-neuro-blue/30 rounded px-4 py-2
+
+/* Glow */
+shadow-[0_0_15px_rgba(0,212,255,0.3)]
+
+/* Panel slide-in */
+transform transition-transform duration-300 ease-out translate-x-0
+```
+
+---
+
+## Dependencies
+
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@react-three/fiber": "^8.15.0",
+    "@react-three/drei": "^9.88.0",
+    "@react-three/postprocessing": "^2.15.0",
+    "three": "^0.160.0",
+    "zustand": "^4.4.0",
+    "tailwindcss": "^3.4.0",
+    "prismjs": "^1.29.0",
+    "js-yaml": "^4.1.0",
+    "file-saver": "^2.0.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/three": "^0.160.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
+```
+
+---
+
+## File Checklist
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `src/components/workspace/Workspace.tsx` | Main 3D canvas | ⬜ |
+| `src/components/workspace/PlusButton.tsx` | Central + button | ⬜ |
+| `src/components/workspace/EmptyState.tsx` | Empty workspace | ⬜ |
+| `src/components/engine/CoreEngine.tsx` | 3D core engine | ⬜ |
+| `src/components/engine/EngineContextMenu.tsx` | Right-click menu | ⬜ |
+| `src/components/engine/HeadLayer.tsx` | Head layer display | ⬜ |
+| `src/components/extensions/ExtensionBlock.tsx` | 3D extension | ⬜ |
+| `src/components/extensions/ExtensionCable.tsx` | Cable | ⬜ |
+| `src/components/extensions/ExtensionPanel.tsx` | Config panel | ⬜ |
+| `src/components/extensions/OptionCard.tsx` | Option card | ⬜ |
+| `src/components/info/InfoPanel.tsx` | Bottom info bar | ⬜ |
+| `src/components/notebook/NotebookWindow.tsx` | Code viewer | ⬜ |
+| `src/components/model-selector/ModelMenu.tsx` | Model list | ⬜ |
+| `src/components/model-selector/RightPanel.tsx` | Side panel | ⬜ |
+| `src/components/develop/DevelopMode.tsx` | Layer editor | ⬜ |
+| `src/components/export/ExportMenu.tsx` | Export buttons | ⬜ |
+| `src/engine/codeGenerator.ts` | Code generation | ⬜ |
+| `src/engine/notebookBuilder.ts` | .ipynb builder | ⬜ |
+| `src/data/models/cnn_v16.json` | CNN v16 definition | ⬜ |
+
+---
+
+*Good luck, Shahd! 🚀*

@@ -1,39 +1,82 @@
-# NeuroScope Language Files (i18n)
+{
+  "app": {
+    "title": "NeuroScope",
+    "subtitle": "Visual Deep Learning Builder",
+    "tagline": "Build deep learning models by dragging, dropping, and configuring — no code required"
+  },
 
-layers:
-  Conv: "Convolutional layer — extracts spatial features using learnable filters"
-  Relu: "ReLU activation — outputs max(0, x), the most common activation function"
-  GELU: "GELU activation — smoother alternative to ReLU, used in transformers"
-  Sigmoid: "Sigmoid activation — maps to (0, 1), can cause vanishing gradients in deep networks"
-  Tanh: "Tanh activation — maps to (-1, 1), can cause vanishing gradients in deep networks"
-  Softmax: "Softmax — converts logits to probabilities for classification"
-  MatMul: "Matrix multiplication — core operation of fully connected layers"
-  Gemm: "General matrix multiplication with bias — used in dense layers"
-  BatchNormalization: "Batch normalization — stabilizes training by normalizing activations"
-  LayerNormalization: "Layer normalization — normalizes across features, common in transformers"
-  MaxPool: "Max pooling — reduces spatial dimensions by taking maximum values"
-  AveragePool: "Average pooling — reduces spatial dimensions by averaging values"
-  GlobalAveragePool: "Global average pool — averages each feature map to a single value"
-  Flatten: "Flatten — reshapes multi-dimensional tensor to 1D"
-  Dropout: "Dropout — randomly zeros neurons during training to prevent overfitting"
-  LSTM: "LSTM — Long Short-Term Memory, captures long-range dependencies in sequences"
-  GRU: "GRU — Gated Recurrent Unit, simplified alternative to LSTM"
-  Concat: "Concatenation — merges tensors along a dimension"
-  Add: "Addition — element-wise sum, used in residual connections"
+  "builder": {
+    "drag": "Drag layers from the palette to the canvas",
+    "drop": "Drop layers to connect them",
+    "extend": "Extend your model with optimizers, loss functions, and more",
+    "configure": "Configure each layer's parameters",
+    "export": "Export as Jupyter notebook or YAML",
+    "canvas_empty": "Drag a layer here to start building",
+    "canvas_hint": "Click a layer to select it, drag to reposition",
+    "add_layer": "Add Layer",
+    "remove_layer": "Remove Layer",
+    "connect_layers": "Connect Layers",
+    "model_preview": "Model Preview",
+    "code_preview": "Code Preview"
+  },
 
-analysis:
-  CRITICAL: "Critical issue — will likely cause training failure or poor results"
-  WARNING: "Warning — may impact performance or training stability"
-  INFO: "Information — good to know, may improve your model"
+  "layers": {
+    "Conv2d": "Convolutional layer — extracts spatial features using learnable filters",
+    "BatchNorm": "Batch normalization — stabilizes training by normalizing activations",
+    "ReLU": "ReLU activation — outputs max(0, x), the most common activation function",
+    "GELU": "GELU activation — smoother alternative to ReLU, used in transformers",
+    "Sigmoid": "Sigmoid activation — maps to (0, 1), can cause vanishing gradients in deep networks",
+    "Tanh": "Tanh activation — maps to (-1, 1), can cause vanishing gradients in deep networks",
+    "Softmax": "Softmax — converts logits to probabilities for classification",
+    "Linear": "Fully connected layer — learns global patterns from flattened features",
+    "MaxPool": "Max pooling — reduces spatial dimensions by taking maximum values",
+    "AvgPool": "Average pooling — reduces spatial dimensions by averaging values",
+    "GlobalAvgPool": "Global average pool — averages each feature map to a single value",
+    "Flatten": "Flatten — reshapes multi-dimensional tensor to 1D",
+    "Dropout": "Dropout — randomly zeros neurons during training to prevent overfitting",
+    "LSTM": "LSTM — Long Short-Term Memory, captures long-range dependencies in sequences",
+    "GRU": "GRU — Gated Recurrent Unit, simplified alternative to LSTM",
+    "Concat": "Concatenation — merges tensors along a dimension",
+    "Add": "Addition — element-wise sum, used in residual connections",
+    "SiLU": "SiLU/Swish — x * sigmoid(x), smooth modern activation",
+    "Mish": "Mish — self-regularized non-monotonic activation",
+    "LeakyReLU": "LeakyReLU — allows small negative slope to prevent dead neurons"
+  },
 
-ui:
-  upload: "Upload Model"
-  analyze: "Analyze"
-  export: "Export"
-  compare: "Compare"
-  health_score: "Health Score"
-  total_params: "Total Parameters"
-  total_flops: "Total FLOPs"
-  memory: "Memory"
-  findings: "Findings"
-  layers: "Layers"
+  "extensions": {
+    "optimizer": "Optimizer",
+    "activation": "Activation Function",
+    "loss": "Loss Function",
+    "learning_rate": "Learning Rate",
+    "batch_size": "Batch Size",
+    "epochs": "Epochs",
+    "augmentation": "Data Augmentation"
+  },
+
+  "export": {
+    "notebook": "Export as Jupyter Notebook",
+    "yaml": "Export as YAML Config",
+    "generating": "Generating export...",
+    "success": "Export ready for download",
+    "error": "Export failed. Please try again."
+  },
+
+  "educational": {
+    "learn_more": "Learn More",
+    "when_to_use": "When to use",
+    "consequences": "Trade-offs",
+    "tips": "Tips"
+  },
+
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next"
+  }
+}

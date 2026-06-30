@@ -1,0 +1,104 @@
+# NeuroScope Builder Rules Configuration
+# Validation rules for the visual deep learning builder
+# Warns users about common mistakes in their model architecture
+
+# Layer-level rules — triggered by individual layer choices
+layer_rules:
+  sigmoid_in_deep_network:
+    enabled: true
+    severity: WARNING
+    min_depth: 5
+    message: "Sigmoid activation in a deep network can cause vanishing gradients. Consider ReLU or SiLU."
+
+  tanh_in_deep_network:
+    enabled: true
+    severity: WARNING
+    min_depth: 5
+    message: "Tanh activation in a deep network can cause vanishing gradients. Consider ReLU or SiLU."
+
+  missing_batchnorm:
+    enabled: true
+    severity: WARNING
+    min_conv_layers: 5
+    message: "Consider adding BatchNorm after convolutional layers for training stability."
+
+  large_kernel:
+    enabled: true
+    severity: WARNING
+    max_kernel_size: 7
+    message: "Large kernels (>7) are rarely needed. Use stacked 3×3 convolutions instead."
+
+# Architecture-level rules — triggered by overall model structure
+architecture_rules:
+  missing_skip_connections:
+    enabled: true
+    severity: WARNING
+    min_depth: 10
+    message: "Deep networks (10+ layers) benefit from skip connections to prevent vanishing gradients."
+
+  no_pooling:
+    enabled: true
+    severity: WARNING
+    min_conv_layers: 3
+    message: "Multiple conv layers without pooling will be computationally expensive. Add MaxPool or stride-2 convolutions."
+
+  premature_flatten:
+    enabled: true
+    severity: INFO
+    message: "Flattening early loses spatial information. Consider GlobalAveragePool instead."
+
+  too_many_fc_layers:
+    enabled: true
+    severity: WARNING
+    max_fc_layers: 3
+    message: "Many FC layers add parameters. Consider GlobalAveragePool + single FC head."
+
+# Training-level rules — triggered by extension choices
+training_rules:
+  high_learning_rate:
+    enabled: true
+    severity: WARNING
+    threshold: 0.01
+    message: "High learning rate (>0.01) can cause unstable training. Consider warmup or a lower rate."
+
+  sigmoid_loss_with_deep_network:
+    enabled: true
+    severity: WARNING
+    message: "Using Sigmoid output with CrossEntropyLoss is incorrect. CrossEntropyLoss includes LogSoftmax internally."
+
+  no_augmentation:
+    enabled: true
+    severity: INFO
+    message: "No data augmentation increases overfitting risk, especially on small datasets."
+
+  large_batch_small_dataset:
+    enabled: true
+    severity: WARNING
+    message: "Large batch size with small dataset may cause overfitting. Consider reducing batch size."
+
+# Hardware presets for training time estimation
+hardware_presets:
+  T4:
+    fp32_tflops: 8.1
+    fp16_tflops: 65
+    memory_gb: 16
+  V100:
+    fp32_tflops: 15.7
+    fp16_tflops: 125
+    memory_gb: 32
+  A100:
+    fp32_tflops: 19.5
+    fp16_tflops: 312
+    memory_gb: 80
+  RTX3090:
+    fp32_tflops: 35.6
+    fp16_tflops: 71
+    memory_gb: 24
+  RTX4090:
+    fp32_tflops: 82.6
+    fp16_tflops: 165
+    memory_gb: 24
+  CPU:
+    fp32_tflops: 0.5
+    fp16_tflops: 0.5
+    memory_gb: 0

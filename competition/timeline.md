@@ -41,8 +41,8 @@
 
 | Period | Milestone | Key Deliverables |
 |--------|-----------|-----------------|
-| **Jul 2026** | Core parser + basic 3D visualization | ONNX parser improvements, Three.js prototype, basic layer rendering |
-| **Aug 2026** | Architecture linter + export features | Additional anti-pattern rules, PDF/PNG export, user testing |
+| **Jul 2026** | CNN v16 builder + extensions | Drag-and-drop canvas, 7 extension modules, 3D machine visualization |
+| **Aug 2026** | Export + desktop app | Jupyter notebook / .py export, Electron desktop app, user testing |
 | **Sep 2026** | Polish + deploy | Demo video, PWA deployment, multilingual UI, user feedback |
 | **Oct 2026** | Present at ceremony | Live demo, presentation slides, Q&A preparation |
 

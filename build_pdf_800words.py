@@ -2,6 +2,7 @@
 """
 NeuroScope Project Introduction Essay — 800 Word Limit
 AYAIR 2026 Competition Submission
+Updated: Visual Builder concept
 """
 
 import os
@@ -116,41 +117,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
   strong { font-weight: 600; }
 
-  /* Team Table */
-  .team-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 9.5pt;
-  }
-
-  .team-table th {
-    background: #1a1a2e;
-    color: #fff;
-    font-size: 8pt;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 10px 14px;
-    text-align: left;
-  }
-
-  .team-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .team-table tr:last-child td { border-bottom: none; }
-  .team-table tr:nth-child(even) { background: #fafafa; }
-
-  .team-table .track {
-    font-size: 8pt;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: #6c6c8a;
-  }
-
   /* Deliverables */
   .deliverable {
     padding: 16px 20px;
@@ -209,7 +175,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     body { font-size: 10pt; }
     .cover { page-break-after: always; }
     h1 { page-break-after: avoid; }
-    .team-table { page-break-inside: avoid; }
   }
 </style>
 </head>
@@ -219,7 +184,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <div class="cover">
   <div class="cover-label">AYAIR 2026 — Third Edition</div>
   <div class="cover-title">NeuroScope</div>
-  <div class="cover-subtitle">AI-Powered 3D Neural Network Architecture Visualizer & Analyzer</div>
+  <div class="cover-subtitle">Visual Deep Learning Builder — Learn by Building, Not by Reading</div>
   <div class="cover-line"></div>
   <div class="cover-meta">
     <strong>Team:</strong> DigiNeurons<br>
@@ -233,60 +198,42 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
 <h1>Project Introduction</h1>
 
-<p>NeuroScope is an open-source, AI-powered tool that makes deep learning architectures visible, interactive, and understandable. It transforms how students learn neural networks by providing 3D interactive visualization, real-time code mapping, and automated architecture analysis — addressing a critical gap in deep learning education across Africa and the developing world.</p>
+<p>NeuroScope is an open-source visual deep learning builder that lets students and developers construct complete ML/DL models by dragging, dropping, and selecting components — no coding required. Every action teaches something: users build real, production-ready models while understanding every choice. NeuroScope addresses the critical gap between ML/DL theory and implementation across Africa, where mentorship infrastructure does not exist.</p>
 
 <h2>Origin</h2>
 
 <p>NeuroScope was born from a real problem we encountered as trainees in the <strong>Digilians Initiative</strong> under Egypt's Ministry of Communications and Information Technology (MCIT). During our deep learning training in New Cairo, we watched colleagues struggle with the same challenge: they could write <code>model.fit()</code> and achieve accuracy scores, but could not explain what happened inside their models. The architecture was a black box.</p>
 
-<p>This gap is systemic across Africa. The tools available — Netron (static 2D diagrams), TensorBoard (TensorFlow-locked), and TensorSpace.js (abandoned since 2019) — do not explain what layers do, detect architectural mistakes, or map visualization back to code. We decided to build the tool we needed ourselves.</p>
+<p>This gap is systemic across Africa. The tools available — Netron (static 2D diagrams), TensorBoard (TensorFlow-locked), and TensorSpace.js (abandoned since 2019) — do not explain what layers do, detect architectural mistakes, or map visualization back to code. None of them teach you how to <em>build</em>. We decided to build the tool we needed ourselves.</p>
 
 <h2>The Problem</h2>
 
-<p>Millions of students across Africa begin learning deep learning each year, yet most cannot explain what happens inside the models they build. They copy architectures without understanding skip connections, attention mechanisms, or batch normalization. When models fail, they cannot diagnose the problem. The mentorship gap means students are left alone with broken models and no way to understand why they broke.</p>
+<p>Every year, millions of students across Africa begin learning ML/DL. They attend lectures and study theory, but when they sit down to build their first model, they face a wall. Most students never cross it. The mentorship gap means students are left alone with broken models and no way to understand why they broke. A student in rural Nigeria debugging a failing model at midnight has nowhere to turn.</p>
 
 <h2>Our Solution</h2>
 
-<p>NeuroScope parses model files (ONNX, PyTorch, Keras, TensorFlow Lite) or Python scripts and generates <strong>interactive 3D visualizations</strong>. Convolutional layers appear as boxes, fully connected layers as planes, attention mechanisms as octahedrons. Clicking any component reveals a plain-language description, the exact code that created it, and parameters/FLOPs/memory footprint.</p>
+<p>NeuroScope lets users construct complete deep learning models through a visual drag-and-drop interface. The model appears on screen as a <strong>3D machine</strong>: layers are connected blocks, extensions like optimizers and loss functions orbit the core engine with visible cables, and the architecture comes alive as the user builds it. Every action teaches something. Click the optimizer and you see what Adam does differently from SGD. Add a convolutional layer and you understand how filters generate feature maps. When a configuration might cause problems, NeuroScope flags it with a clear explanation and suggested fix.</p>
 
-<p>The built-in analysis engine detects <strong>47+ anti-patterns</strong>: missing activations, sigmoid in deep networks, parameter explosion, and more. Each finding includes severity, explanation, and suggested fix. The visualization updates instantly when code changes — before running it — developing intuition that would otherwise require months of trial and error.</p>
+<p>The tool acts as an <strong>automated mentor</strong>, catching mistakes a senior engineer would catch during code review — available anytime, anywhere, for free. NeuroScope is designed to become the primary tool for building ML/DL models — replacing scattered tutorials, copy-pasted code, and blind debugging with a single, guided environment.</p>
 
-<h2>Deliverables</h2>
+<h2>How It Works</h2>
 
-<p>NeuroScope is <strong>free and open-source</strong>, designed to work in any environment — including areas with weak or no internet connectivity across Africa.</p>
+<p>When building is complete, NeuroScope generates <strong>clean, production-ready code</strong> as a Jupyter notebook or Python file. Take it to Colab, add your dataset, and run. The user understands every line because they chose each piece themselves.</p>
 
-<div class="deliverable">
-  <div class="deliverable-title">1. Web Application (Current Release)</div>
-  <div class="deliverable-desc">Browser-based platform for model upload, 3D visualization, analysis, and reporting. No installation required.</div>
-</div>
+<p>NeuroScope launches as a <strong>web application</strong> with a companion <strong>desktop app</strong> that works both online and offline. Deep learning is the primary focus, with classical ML planned for future releases. The first architecture is a 16-layer CNN with seven configurable extensions: optimizer, activation, loss function, learning rate, batch size, epochs, and data augmentation — each with educational descriptions and consequences. Future versions will support YOLO, ResNet, EfficientNet, and classical models. A <strong>VS Code extension</strong> is planned, allowing users to build and run models directly inside their development environment. For advanced users, a develop mode allows inspecting code, freezing layers, and modifying architectures at a granular level.</p>
 
-<div class="deliverable">
-  <div class="deliverable-title">2. VS Code Extension (Update)</div>
-  <div class="deliverable-desc">Real-time code visualization inside VS Code. Architecture renders in a 3D panel, updating live with every edit.</div>
-</div>
+<h2>Impact for Africa</h2>
 
-<div class="deliverable">
-  <div class="deliverable-title">3. AI Agent Plugins (Update)</div>
-  <div class="deliverable-desc">Integrations for Claude, GitHub Copilot, and other LLM agents. Turns any AI assistant into an architecture-aware code reviewer.</div>
-</div>
+<p>NeuroScope is <strong>free, open-source, and offline-capable</strong>. It supports five languages: English, French, Arabic, Swahili, and Portuguese — covering 2.5 billion speakers. It runs in any browser on any device, including low-end laptops. There is no cost, no subscription, no GPU requirement. Universities can deploy their own instances via Docker.</p>
 
-<div class="deliverable">
-  <div class="deliverable-title">4. Desktop Application (Update)</div>
-  <div class="deliverable-desc">Standalone application for Windows and Mac. <strong>Downloads and runs locally — completely offline.</strong> Same features as the web version, no internet required.</div>
-</div>
-
-<h2>Impact</h2>
-
-<p>NeuroScope is <strong>free, open-source, and offline-capable</strong>. It requires no GPU, no cloud credits, and no installation. It supports five languages: English, French, Arabic, Swahili, and Portuguese — covering 2.5+ billion speakers across Africa and the developing world.</p>
-
-<p>The tool aligns with AU STISA 2034, Agenda 2063, and Egypt's MCIT digital transformation strategy. When no senior ML engineer is available to review a student's architecture, NeuroScope provides that review automatically. A trainee in New Cairo receives the same guidance as a researcher at a leading institution.</p>
+<p>It aligns with AU STISA 2034, Agenda 2063, and Egypt's MCIT digital transformation strategy. It is <strong>inclusive</strong> — offline, multilingual, any device. It is <strong>sustainable</strong> — open source, community-driven. It is <strong>efficient</strong> — replacing months of trial-and-error with guided, interactive building.</p>
 
 <h2>Sustainability</h2>
 
-<p>Released under the MIT license, NeuroScope is designed for community contribution. Analysis rules are YAML-configurable. Layer descriptions are structured data. Translations use JSON language files. Universities can deploy their own instances via Docker.</p>
+<p>Released under the MIT license, NeuroScope is designed for community contribution. Rules, descriptions, and translations are all configurable. The web app and desktop app form the foundation; a VS Code extension will bring the visual builder into the developer's coding environment, enabling construction and execution in the same place.</p>
 
 <div class="quote-block">
-  <p>"We built NeuroScope not as a competition entry, but as lasting infrastructure for deep learning education. The problems we faced as trainees are the same problems students face across Africa. NeuroScope turns those shared struggles into shared solutions."</p>
+  <p>"We built NeuroScope not as a competition entry, but as lasting infrastructure for deep learning education. The problems we faced as trainees are the same problems students face across Africa. NeuroScope does not just show you the machine. It teaches you how to build it."</p>
 </div>
 
 <!-- Footer -->

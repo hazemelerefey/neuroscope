@@ -1,31 +1,24 @@
-# NeuroScope Backend
+# NeuroScope Backend — Visual Deep Learning Builder
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
 python-multipart==0.0.9
 pydantic==2.9.0
 
-# Model Parsing
-onnx==1.17.0
-onnxruntime==1.19.0
-protobuf==5.28.0
-
-# PyTorch (optional, for .pt files)
-torch>=2.0.0
-# torchinfo>=1.8.0
-
-# Keras/TensorFlow (optional, for .h5 files)
-# tensorflow>=2.15.0
-
-# TFLite support
-flatbuffers>=24.3.25
-
-# Export
-trimesh==4.4.0          # GLB/GLTF export
+# Export (notebook, YAML, PDF, PNG)
+pyyaml==6.0.2           # YAML config export
 reportlab==4.2.0        # PDF export
-pyyaml==6.0.2           # Config files
 matplotlib>=3.7.0       # PNG export
+trimesh==4.4.0          # GLB/GLTF export (3D visualization)
 
 # Utilities
 numpy==1.26.4
 rich==13.7.0            # CLI output
 slowapi==0.1.9          # Rate limiting
+
+# NOTE: The following were removed — NeuroScope no longer parses model files.
+# Models are now defined as JSON configs in src/data/models/.
+# onnx==1.17.0
+# onnxruntime==1.19.0
+# protobuf==5.28.0
+# torch>=2.0.0
+# flatbuffers>=24.3.25

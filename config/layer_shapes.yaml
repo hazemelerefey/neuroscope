@@ -1,24 +1,28 @@
-# NeuroScope Layer Type → 3D Shape Mapping
-# Defines how each layer type is rendered in the 3D visualization
+# NeuroScope Visual Builder — 3D Shape Mapping
+# Defines how each element is rendered in the 3D visual builder canvas
 
-shapes:
+# ──── Core Engine Blocks (Layers) ────
+core_blocks:
   # Convolution layers → 3D Box (represents feature map volume)
   convolution:
     geometry: box
     color: "#6366f1"  # Indigo
-    scale_by: output_channels  # Size proportional to channel count
+    scale_by: output_channels
+    label: "Conv"
 
   # Linear/Dense layers → Flat Plane (2D weight matrix)
   linear:
     geometry: plane
     color: "#8b5cf6"  # Purple
     scale_by: output_features
+    label: "FC"
 
   # Pooling layers → Small Cube (reduced spatial dims)
   pooling:
     geometry: small_cube
     color: "#06b6d4"  # Cyan
     scale_by: output_spatial
+    label: "Pool"
 
   # Activation layers → Glowing Sphere (element-wise uniform)
   activation:
@@ -26,67 +30,111 @@ shapes:
     color: "#f59e0b"  # Amber
     scale_by: none
     glow: true
+    label: "Act"
 
   # Normalization layers → Thin Slab
   normalization:
     geometry: slab
     color: "#10b981"  # Emerald
     scale_by: channels
+    label: "BN"
 
   # Reshape layers (Flatten, etc.) → Cone (funnels data)
   reshape:
     geometry: cone
     color: "#ec4899"  # Pink
     scale_by: none
+    label: "Reshape"
 
   # Regularization (Dropout) → Wireframe cube
   regularization:
     geometry: wireframe
     color: "#ef4444"  # Red
     scale_by: none
+    label: "Drop"
 
   # Recurrent layers → Cylinder (cyclical flow)
   recurrent:
     geometry: cylinder
     color: "#14b8a6"  # Teal
     scale_by: hidden_size
+    label: "RNN"
 
   # Attention layers → Octahedron (multi-head pattern)
   attention:
     geometry: octahedron
     color: "#f97316"  # Orange
     scale_by: num_heads
+    label: "Attn"
 
   # Combination (Add, Concat) → Merge shape
   combination:
     geometry: merge
     color: "#84cc16"  # Lime
     scale_by: none
+    label: "Merge"
 
   # Default/Unknown
   other:
     geometry: cube
     color: "#64748b"  # Slate
     scale_by: none
+    label: "?"
 
-# Edge styles
-edges:
+# ──── Extension Blocks ────
+# These are parameter blocks that attach to the model (optimizer, loss, etc.)
+extension_blocks:
+  training:
+    geometry: rounded_rect
+    color: "#22c55e"  # Green
+    icon: "⚡"
+    label_prefix: "Train"
+
+  functional:
+    geometry: rounded_rect
+    color: "#eab308"  # Yellow
+    icon: "📦"
+    label_prefix: "Config"
+
+  data:
+    geometry: rounded_rect
+    color: "#a855f7"  # Purple
+    icon: "🟣"
+    label_prefix: "Data"
+
+# ──── Cables (Connections) ────
+cables:
+  # Sequential data flow
   sequential:
     color: "#94a3b8"  # Gray
     style: solid
-    width: 1.0
+    width: 2.0
+    animated: true
 
+  # Skip / residual connections
   skip:
     color: "#f59e0b"  # Amber
     style: dashed
-    width: 2.0
+    width: 3.0
+    animated: false
 
+  # Residual connections
   residual:
     color: "#10b981"  # Emerald
     style: dashed
-    width: 2.0
+    width: 3.0
+    animated: false
 
+  # Concatenation connections
   concat:
     color: "#8b5cf6"  # Purple
     style: dotted
+    width: 2.5
+    animated: false
+
+  # Extension attachment
+  extension:
+    color: "#64748b"  # Slate
+    style: dotted
     width: 1.5
+    animated: false

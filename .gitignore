@@ -54,7 +54,7 @@ frontend/build/
 .env.local
 .env.*.local
 
-# Model files (large)
+# Model files (large — models are now JSON configs, not binary files)
 data/samples/*.onnx
 data/samples/*.pt
 data/samples/*.pth
@@ -67,6 +67,10 @@ reports/*.pdf
 reports/*.html
 reports/figures/*.png
 reports/figures/*.svg
+
+# Generated notebooks (from export)
+*.ipynb_checkpoints/
+export_output/
 
 # Docker
 .docker/
