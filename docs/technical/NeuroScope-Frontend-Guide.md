@@ -1,326 +1,577 @@
 # NeuroScope — Frontend Development Guide
 
-**For:** Shahd Khairy (Frontend Developer)
-**Date:** June 29, 2026
-**Stack:** React 18 + TypeScript + Three.js + React Three Fiber + Tailwind CSS
+**Stack:** React 18 + TypeScript + Three.js (React Three Fiber) + Zustand + Tailwind CSS (via index.css)
+**Last updated:** June 30, 2026 (matches actual implementation)
 
 ---
 
-## Quick Start
+## File Structure
 
-```bash
-cd frontend
-npm install
-npm run dev
+```
+frontend/src/
+├── types.ts                    # All TypeScript type definitions
+├── store.ts                    # Zustand global store (model catalog, extensions, actions)
+├── App.tsx                     # Root layout: header, workspace, overlays
+├── index.css                   # All styles (CSS variables + component classes)
+└── components/
+    ├── Canvas3D.tsx            # 3D viewport (R3F): core engine, extensions, cables
+    ├── ModelSelector.tsx       # Right-panel model tree picker
+    ├── ExtensionConfig.tsx     # Right-panel extension option selector
+    ├── NotebookWindow.tsx      # Top-right code viewer overlay
+    ├── DevelopMode.tsx         # Bottom-right layer inspector overlay
+    └── InfoPanel.tsx           # Bottom bar model summary
 ```
 
 ---
 
-## Your Responsibilities
+## 1. Component Architecture
 
-1. **3D Workspace** — The main canvas where the model and extensions live
-2. **Core Engine** — The central 3D block that represents the model
-3. **Extension Blocks** — Satellite 3D blocks with cables
-4. **Configuration Panels** — Right-side panels for each extension
-5. **Info Panel** — Bottom bar showing model + config summary
-6. **Notebook Window** — Collapsible code viewer (top-right)
-7. **Model Selector** — Right panel + plus button
-8. **Develop Mode** — Layer editor view
-9. **Animations** — Glow, pulse, cable illumination
-10. **Export UI** — Download buttons
+```
+App
+├── header (toolbar: Develop / Notebook / Reset)
+└── workspace (flex row)
+    ├── canvas-area
+    │   └── CanvasErrorBoundary
+    │       └── Canvas3D (R3F <Canvas>)
+    │           ├── EmptyState (Html overlay, + button)
+    │           ├── CoreEngine (rotating box)
+    │           ├── ExtensionBlock × 7 (orbiting octahedra)
+    │           └── Cable × 7 (dashed lines)
+    ├── panel-area (right sidebar, 340px)
+    │   ├── ModelSelector (when rightPanelTab === 'model')
+    │   └── ExtensionConfig (when rightPanelTab === 'extension')
+    ├── develop-panel (absolute overlay, bottom-right)
+    │   └── DevelopMode
+    ├── notebook-window (absolute overlay, top-right)
+    │   └── NotebookWindow
+    └── info-panel (absolute, bottom bar)
+        └── InfoPanel
+```
+
+**Panel switching logic in App.tsx:**
+```tsx
+{rightPanelTab === 'model' ? (
+  <ModelSelector />
+) : selectedExtensionKind ? (
+  <ExtensionConfig kind={selectedExtensionKind} onClose={handleExtensionClose} />
+) : (
+  <ModelSelector />
+)}
+```
+
+Overlays (DevelopMode, NotebookWindow, InfoPanel) are conditionally rendered based on store state.
 
 ---
 
-## Component Breakdown
+## 2. Components
 
-### 1. Workspace (Main Canvas)
+### 2.1 Canvas3D
 
+**File:** `src/components/Canvas3D.tsx`
+
+**Purpose:** The main 3D viewport. Shows an empty state with a "+" button, or the selected model's core engine block surrounded by orbiting extension octahedra connected by cables.
+
+**Sub-components:**
+
+#### EmptyState
+- Rendered via `<Html center>` when no model is selected
+- Circular dashed-border "+" button (80×80px, indigo tones)
+- Click calls `useStore.getState().setRightPanelTab('model')` to open the model selector
+- Hover: solid border + scale(1.05)
+
+#### CoreEngine
+- **Props:** `{ model: SelectedModel }`
+- Metallic box whose size scales with model complexity: `baseScale = 0.5 + complexity * 0.15`
+- Three nested meshes: solid box (opacity 0.85), wireframe overlay, inner emissive glow
+- Color per family: CNN=indigo, YOLO=amber, ResNet=green, Transformer=purple, GAN=pink, Autoencoder=cyan
+- Label via `<Html>` showing version name, size name, and param count
+- **Animation:** Continuous Y-axis rotation (`delta * 0.2`)
+
+#### ExtensionBlock
+- **Props:** `{ extension: Extension, index: number, total: number }`
+- Octahedron geometry (radius 0.25 unconfigured, 0.35 configured)
+- Orbits the origin at radius 3, with slow drift (`time * 0.1`) and Y-axis bob
+- Click calls `selectExtension(extension.kind)` to open config panel
+- Shows icon + label above, "✓ configured" badge when option selected
+- Emissive intensity: 0 (default), 0.2 (configured), 0.5 (selected)
+
+#### Cable
+- **Props:** `{ index: number, total: number, color: string }`
+- `<Line>` from origin to orbit position (dashed, opacity 0.3, lineWidth 1)
+- Static snapshot (not dynamically animated to track moving extensions)
+
+**Canvas config:**
+```tsx
+<Canvas gl={{ antialias: true }} dpr={[1, 2]}>
+  <PerspectiveCamera makeDefault position={[0, 4, 10]} />
+  <OrbitControls enableDamping dampingFactor={0.05} />
+  {/* ambient + directional + 2 colored point lights */}
+  <gridHelper args={[30, 30, '#1e293b', '#0f172a']} />
+</Canvas>
 ```
-┌─────────────────────────────────────────┐
-│                                         │
-│            3D CANVAS                    │
-│         (React Three Fiber)             │
-│                                         │
-│    ┌─────────┐                          │
-│    │ Core    │──── Extensions           │
-│    │ Engine  │                          │
-│    └─────────┘                          │
-│                                         │
-│                      ┌──────────────┐   │
-│                      │  Notebook    │   │
-│                      │  (Collapsed) │   │
-│                      └──────────────┘   │
-├─────────────────────────────────────────┤
-│  Info Panel: CNN v16 | Head: Softmax... │
-└─────────────────────────────────────────┘
+
+---
+
+### 2.2 ModelSelector
+
+**File:** `src/components/ModelSelector.tsx`
+
+**Purpose:** Right-panel tree picker for choosing a model family → version → size.
+
+**State:**
+- `expandedFamily: string | null` — which family accordion is open
+- `expandedVersion: string | null` — which version accordion is open
+
+**Rendering:** Three-level expandable tree:
+1. **Family** — icon + name button (e.g. `🔲 CNN`)
+2. **Version** — indented sub-button (e.g. `Basic CNN`)
+3. **Sizes** — card buttons showing name, param count, description, and a 5-dot complexity indicator
+
+**Selection:** Clicking a size calls:
+```tsx
+selectModel({ family, version, size })
 ```
 
-**Key Points:**
-- Full viewport height/width
-- Black background (#000000)
-- React Three Fiber `<Canvas>` component
-- OrbitControls for camera (limited: no flip, zoom range 5-20)
-- Post-processing: Bloom effect for glow
+The currently selected size gets a purple border + check icon.
 
-### 2. Core Engine (3D Block)
+---
 
-**Visual:**
-- Metallic cube (2x2x2 units)
-- Surface: Custom shader with circuit lines (blue #00d4ff)
-- Model label: HTML overlay or 3D text
-- Head layer: Glowing ring on top
+### 2.3 ExtensionConfig
 
-**Animation:**
-- Power on: Scale 0→1 over 1.5s, opacity fade, glow pulse
-- Idle: Subtle floating motion (sin wave on Y axis)
-- Click: Scale up slightly (1.05x), show context menu
+**File:** `src/components/ExtensionConfig.tsx`
 
-**Interaction:**
-- Click → Context menu (Change Model, Custom/Develop Mode)
-- Hover → Slight glow increase
+**Purpose:** Right-panel form for picking an option within an extension (optimizer, loss function, etc.).
 
-### 3. Extension Blocks (Satellites)
-
-**Visual:**
-- Smaller cubes (1x1x1 units) orbiting the core engine
-- Category color border (green/purple/yellow)
-- Icon on front face
-- Name label below
-
-**States:**
-- Unconfigured: Dark material, dim cable, gray icon
-- Configured: Glowing material, bright cable, colored icon
-
-**Positioning:**
-- Evenly distributed around core engine (radius = 4 units)
-- Each extension at a fixed angle (360° / num_extensions)
-
-**Cable:**
-- CatmullRomCurve3 from extension to core engine
-- TubeGeometry (radius = 0.05)
-- Color matches category
-- Glow intensity based on configuration state
-
-### 4. Configuration Panel (Right Side)
-
-**Trigger:** Click an extension block
-
-**Animation:** Slide in from right (0.3s ease-out)
+**Props:** `{ kind: ExtensionKind, onClose: () => void }`
 
 **Layout:**
-```
-┌─────────────────────────────┐
-│  ← Back          ⚡ Optimizer│
-│                             │
-│  ○ SGD                      │
-│    Classic optimizer...     │
-│                             │
-│  ● AdamW          [ACTIVE]  │
-│    Decoupled weight decay...│
-│    ✓ Best for modern arch   │
-│    ⚠ More compute than Adam │
-│                             │
-│  ○ Adam                     │
-│    Adaptive learning rate...│
-│                             │
-│  ○ RMSprop                  │
-│    Running average...       │
-│                             │
-│         [Apply]             │
-└─────────────────────────────┘
-```
+- Header with icon + label + close button
+- List of option buttons (name + description)
+- Selected option expands to show three detail sections:
+  - 💡 **When to use** — plain-English guidance
+  - ⚡ **Consequences** — trade-offs
+  - 📝 **Code** — Python snippet in a `<pre><code>` block
+
+**Behavior:** Clicking an option calls `updateExtensionOption(kind, optionId)` which updates the store and opens the notebook.
+
+---
+
+### 2.4 NotebookWindow
+
+**File:** `src/components/NotebookWindow.tsx`
+
+**Purpose:** Top-right overlay showing generated notebook/config code.
+
+**State:**
+- `activeFormat: 'ipynb' | 'yaml'` — tab toggle
+- `copied: boolean` — copy feedback
+- `content: string` — generated output
 
 **Behavior:**
-- Radio buttons for single-select options
-- Custom input for learning rate, batch size, epochs
-- Apply button → updates state, injects code, glows extension
-- Back button → closes panel, returns to workspace
+- Content regenerates via `useEffect` whenever model, extensions, or format change
+- **Copy** button uses `navigator.clipboard.writeText`
+- **Download** creates a Blob → object URL → programmatic `<a>` click
+- Format tabs switch between `.ipynb` (JSON notebook) and `.yaml` (config)
 
-### 5. Info Panel (Bottom Bar)
+**Rendering:** Fixed at `position: absolute; top: 0; right: 340px; width: 480px; max-height: 55%`.
 
-**Always visible** at the bottom of the screen.
+---
 
-**Content:**
-- Model name + type
-- Head layer: activation function + output classes
-- Each configured extension: brief summary
+### 2.5 DevelopMode
 
-**Example:**
-```
-🧠 CNN v16 | 🎯 Head: Softmax (10 classes) | ⚡ AdamW | 📈 LR: 0.001 | 📦 Batch: 16 | 🔄 Epochs: 100
-```
+**File:** `src/components/DevelopMode.tsx`
 
-### 6. Notebook Window (Top-Right)
+**Purpose:** Bottom-right overlay showing a layer-by-layer inspector for the selected model.
 
-**Default:** Collapsed (small tab: "📓 Notebook")
+**State:**
+- `expandedLayer: string | null` — which layer's details are visible
+- `addAfterId: string | null` — which layer's "add after" menu is open
 
-**Auto-opens when:**
-- Model selected
-- Extension configured
-- Extension changed
+**Layer list:** Each layer shows:
+- Expand chevron → input/output shapes, param count, frozen/trainable status
+- Type badge (e.g. `CONV2D`) + name + param count
+- Action buttons: ❄️ freeze toggle, ➕ add after, 🗑️ remove (if `removable`)
 
-**Expanded view:**
-```
-┌──────────────────────────────┐
-│ 📓 Notebook            [—]   │
-│                              │
-│ # NeuroScope — CNN v16       │
-│ # Generated by NeuroScope    │
-│                              │
-│ import torch                 │
-│ import torch.nn as nn        │
-│                              │
-│ # Model Definition           │
-│ class CNNv16(nn.Module):     │
-│     def __init__(self):      │
-│         ...                  │
-│                              │
-│ # Optimizer                  │
-│ optimizer = 'AdamW'          │
-│                              │
-│ # Loss Function              │
-│ criterion = 'CrossEntropy'   │
-│                              │
-│ [Copy] [Download .ipynb]     │
-└──────────────────────────────┘
-```
+**Add layer menu:** Offers `ADDABLE_LAYER_TYPES = ['Conv2d', 'Linear', 'BatchNorm2d', 'ReLU', 'GELU', 'Dropout', 'MaxPool2d']`
 
-**Features:**
-- Syntax highlighting (use Prism.js or highlight.js)
-- Line numbers
-- Editable (contentEditable or Monaco editor)
-- Copy button
-- Download .ipynb button
-- Download .yaml button
+**Layers are auto-generated** by `selectModel` in the store based on model complexity (see §3).
 
-### 7. Model Selector
+---
 
-**Plus Button:**
-- Centered in workspace when empty
-- Circular button with "+" icon
-- Hover: Glow effect
-- Click: Opens model menu
+### 2.6 InfoPanel
 
-**Right Panel (Model List):**
-- Collapsible panel on the right
-- Shows available model families
-- Currently: CNN v16 only
-- Click model → places it on workspace, panel hides
-- Drag model → drop on workspace
+**File:** `src/components/InfoPanel.tsx`
 
-### 8. Develop Mode
-
-**Trigger:** Click core engine → Custom
-
-**View:** Overlay or full-screen modal
+**Purpose:** Bottom bar showing model summary and configured extension count.
 
 **Layout:**
-```
-┌─────────────────────────────────────────┐
-│  Develop Mode — CNN v16          [Close]│
-│                                         │
-│  ┌───────────────────────────────────┐  │
-│  │ Layer 1: Conv2d(3→64)    [🧊][🗑]│  │
-│  │ Layer 2: BatchNorm(64)   [🧊][🗑]│  │
-│  │ Layer 3: ReLU            [🧊][🗑]│  │
-│  │ ...                               │  │
-│  │ Layer 16: Head (Softmax) [⚠️]     │  │
-│  └───────────────────────────────────┘  │
-│                                         │
-│  [Freeze All] [Unfreeze All] [Reset]    │
-└─────────────────────────────────────────┘
-```
+- Toggle bar: "ℹ️ Model Info" with collapse chevron
+- Expanded content (horizontal flex):
+  - Model name + icon + description
+  - Stats row: Family, Parameters, Complexity (5 dots), Extensions (configured/total)
+  - Configured extensions list (icon + label + selected option name)
 
-**Interactions:**
-- 🧊 Freeze/Unfreeze toggle per layer
-- 🗑️ Remove layer (except head)
-- Head layer: Always visible, cannot be removed, shows activation
-- Changes update the notebook code
+**Rendering:** `position: absolute; bottom: 0; left: 0; right: 340px`.
 
 ---
 
-## Tailwind Classes Reference
+## 3. State Management (Zustand)
 
-### Colors
-```css
---neuro-blue: #00d4ff      /* Core engine */
---neuro-green: #00ff88     /* Training extensions */
---neuro-purple: #b44dff    /* Data extensions */
---neuro-yellow: #ffd700    /* Functional extensions */
---neuro-dark: #0a0a0a      /* Background */
---neuro-gray: #666666      /* Disabled */
-```
+**File:** `src/store.ts`
 
-### Common Classes
-```css
-/* Panel */
-bg-neuro-dark/90 backdrop-blur-md border border-neuro-blue/20 rounded-lg
+### 3.1 State Fields
 
-/* Button */
-bg-neuro-blue/10 hover:bg-neuro-blue/20 text-neuro-blue border border-neuro-blue/30 rounded px-4 py-2
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `modelCatalog` | `ModelFamily[]` | 6 families (CNN, YOLO, ResNet, Transformer, GAN, Autoencoder) | Read-only model catalog |
+| `selectedModel` | `SelectedModel \| null` | `null` | Currently selected model |
+| `extensions` | `Extension[]` | 7 default extensions | All extension configs with options |
+| `selectedExtensionKind` | `ExtensionKind \| null` | `null` | Which extension panel is open |
+| `notebookOpen` | `boolean` | `false` | Notebook overlay visibility |
+| `developMode` | `boolean` | `false` | Layer inspector visibility |
+| `infoPanelCollapsed` | `boolean` | `false` | Info panel collapse state |
+| `rightPanelTab` | `'model' \| 'extension'` | `'model'` | Which right panel to show |
+| `layers` | `LayerInfo[]` | `[]` | Generated layers for develop mode |
 
-/* Glow */
-shadow-[0_0_15px_rgba(0,212,255,0.3)]
+### 3.2 Actions
 
-/* Panel slide-in */
-transform transition-transform duration-300 ease-out translate-x-0
-```
+| Action | Signature | Effect |
+|---|---|---|
+| `selectModel` | `(model: SelectedModel) => void` | Sets model, generates layers from complexity, opens notebook, resets panel to 'model' |
+| `clearModel` | `() => void` | Resets everything: model, layers, extensions, UI state |
+| `selectExtension` | `(kind: ExtensionKind) => void` | Sets `selectedExtensionKind`, switches panel to 'extension' |
+| `updateExtensionOption` | `(kind, optionId) => void` | Updates extension's `selectedOptionId`, opens notebook |
+| `toggleNotebook` | `() => void` | Toggles `notebookOpen` |
+| `toggleDevelopMode` | `() => void` | Toggles `developMode` |
+| `toggleInfoPanel` | `() => void` | Toggles `infoPanelCollapsed` |
+| `setRightPanelTab` | `(tab) => void` | Sets `rightPanelTab` |
+| `toggleLayerFrozen` | `(layerId) => void` | Flips layer's `frozen` boolean |
+| `removeLayer` | `(layerId) => void` | Removes layer from `layers` array |
+| `addLayer` | `(afterId, layerType) => void` | Inserts new layer after specified ID |
+| `exportNotebook` | `(format: ExportFormat) => string` | Generates `.ipynb` JSON or `.yaml` config string |
+| `reset` | `() => void` | Full state reset to defaults |
+
+### 3.3 Layer Generation (in `selectModel`)
+
+Layers are generated based on `model.size.complexity` (1–5):
+- For each block `0..complexity`: Conv2d → BatchNorm2d → ReLU → MaxPool2d (except last block)
+- Final: Flatten → Linear (output 10 classes)
+- Channel count scales: `64 * (block + 1)`
+- First Conv2d is non-removable; all others are removable
+
+### 3.4 Model Catalog
+
+Six families, each with versions and sizes:
+
+| Family | Icon | Versions | Sizes |
+|---|---|---|---|
+| CNN | 🔲 | Basic CNN | Nano (~100K) → X-Large (~50M) |
+| YOLO | 👁️ | YOLOv5, YOLOv8 | Nano (~1.9M/3.2M) → X-Large (~87M/68M) |
+| ResNet | 🔗 | ResNet | ResNet-18 (~11M) → ResNet-152 (~60M) |
+| Transformer | 🤖 | ViT | ViT-S/16 (~22M) → ViT-L/16 (~307M) |
+| GAN | 🎨 | DCGAN | Small (~3M) → Large (~50M) |
+| Autoencoder | 🔄 | VAE | Small (~1M) → Large (~20M) |
+
+Each `ModelSize` has a `complexity` rating (1–5) that drives 3D block size and layer count.
+
+### 3.5 Default Extensions
+
+| Kind | Icon | Color | Options |
+|---|---|---|---|
+| `optimizer` | ⚡ | `#f59e0b` | Adam, SGD + Momentum, AdamW |
+| `activation` | 📈 | `#8b5cf6` | ReLU, GELU, SiLU/Swish, Leaky ReLU |
+| `loss` | 🎯 | `#ef4444` | Cross Entropy, MSE, BCE With Logits, Focal Loss |
+| `lr_scheduler` | 📉 | `#06b6d4` | Cosine Annealing, Step LR, Reduce On Plateau |
+| `batch_size` | 📦 | `#10b981` | 16, 32, 64, 128 |
+| `epochs` | 🔁 | `#f97316` | 10, 50, 100, 300 |
+| `augmentation` | 🔀 | `#ec4899` | None, Basic, Advanced (AutoAugment) |
+
+Each option includes: `id`, `name`, `description`, `whenToUse`, `consequences`, `code` (Python snippet).
+
+Extensions are positioned at evenly spaced angles (0°, 51°, 102°, 153°, 204°, 255°, 306°) at distance 3.
 
 ---
 
-## Dependencies
+## 4. Types
 
-```json
-{
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@react-three/fiber": "^8.15.0",
-    "@react-three/drei": "^9.88.0",
-    "@react-three/postprocessing": "^2.15.0",
-    "three": "^0.160.0",
-    "zustand": "^4.4.0",
-    "tailwindcss": "^3.4.0",
-    "prismjs": "^1.29.0",
-    "js-yaml": "^4.1.0",
-    "file-saver": "^2.0.5"
-  },
-  "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/three": "^0.160.0",
-    "typescript": "^5.3.0",
-    "vite": "^5.0.0",
-    "vitest": "^1.0.0"
-  }
+**File:** `src/types.ts`
+
+### Model Types
+
+```typescript
+type ModelFamilyId = 'cnn' | 'yolo' | 'resnet' | 'transformer' | 'gan' | 'autoencoder'
+
+interface ModelFamily {
+  id: ModelFamilyId
+  name: string
+  icon: string
+  description: string
+  versions: ModelVersion[]
+}
+
+interface ModelVersion {
+  id: string        // e.g. "yolov5"
+  name: string      // e.g. "YOLOv5"
+  sizes: ModelSize[]
+}
+
+type ModelSizeId = 'nano' | 'small' | 'medium' | 'large' | 'xlarge'
+
+interface ModelSize {
+  id: ModelSizeId
+  name: string
+  params: string         // e.g. "~3.2M"
+  description: string
+  complexity: 1 | 2 | 3 | 4 | 5  // drives 3D block size + layer count
+}
+
+interface SelectedModel {
+  family: ModelFamily
+  version: ModelVersion
+  size: ModelSize
 }
 ```
 
+### Extension Types
+
+```typescript
+type ExtensionKind =
+  | 'optimizer' | 'activation' | 'loss' | 'lr_scheduler'
+  | 'batch_size' | 'epochs' | 'augmentation'
+
+interface ExtensionOption {
+  id: string
+  name: string
+  description: string
+  whenToUse: string
+  consequences: string
+  code: string           // Python code snippet
+}
+
+interface Extension {
+  kind: ExtensionKind
+  label: string
+  icon: string
+  options: ExtensionOption[]
+  selectedOptionId: string | null
+  position: { angle: number; distance: number }
+  color: string          // hex color for cable + block
+}
+```
+
+### Layer Types (Develop Mode)
+
+```typescript
+interface LayerInfo {
+  id: string
+  name: string
+  type: string           // "Conv2d", "BatchNorm2d", "ReLU", etc.
+  params: number
+  frozen: boolean
+  removable: boolean
+  inputShape: string     // e.g. "[B, 64, H, W]"
+  outputShape: string
+}
+```
+
+### Other Types
+
+```typescript
+type ExportFormat = 'ipynb' | 'yaml'
+
+interface WorkspaceState {
+  selectedModel: SelectedModel | null
+  extensions: Extension[]
+  notebookOpen: boolean
+  developMode: boolean
+  infoPanelCollapsed: boolean
+  rightPanelTab: 'model' | 'extension'
+  selectedExtensionKind: ExtensionKind | null
+}
+```
+
+Legacy types (`LayerNode`, `Edge`, `GraphData`) are retained for backward compatibility but unused by the current frontend.
+
 ---
 
-## File Checklist
+## 5. 3D Rendering Details
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `src/components/workspace/Workspace.tsx` | Main 3D canvas | ⬜ |
-| `src/components/workspace/PlusButton.tsx` | Central + button | ⬜ |
-| `src/components/workspace/EmptyState.tsx` | Empty workspace | ⬜ |
-| `src/components/engine/CoreEngine.tsx` | 3D core engine | ⬜ |
-| `src/components/engine/EngineContextMenu.tsx` | Right-click menu | ⬜ |
-| `src/components/engine/HeadLayer.tsx` | Head layer display | ⬜ |
-| `src/components/extensions/ExtensionBlock.tsx` | 3D extension | ⬜ |
-| `src/components/extensions/ExtensionCable.tsx` | Cable | ⬜ |
-| `src/components/extensions/ExtensionPanel.tsx` | Config panel | ⬜ |
-| `src/components/extensions/OptionCard.tsx` | Option card | ⬜ |
-| `src/components/info/InfoPanel.tsx` | Bottom info bar | ⬜ |
-| `src/components/notebook/NotebookWindow.tsx` | Code viewer | ⬜ |
-| `src/components/model-selector/ModelMenu.tsx` | Model list | ⬜ |
-| `src/components/model-selector/RightPanel.tsx` | Side panel | ⬜ |
-| `src/components/develop/DevelopMode.tsx` | Layer editor | ⬜ |
-| `src/components/export/ExportMenu.tsx` | Export buttons | ⬜ |
-| `src/engine/codeGenerator.ts` | Code generation | ⬜ |
-| `src/engine/notebookBuilder.ts` | .ipynb builder | ⬜ |
-| `src/data/models/cnn_v16.json` | CNN v16 definition | ⬜ |
+### Empty State
+- `<Html center>` overlay with a dashed-circle "+" button
+- Indigo color scheme (`rgba(99,102,241,...)`)
+- Click triggers `setRightPanelTab('model')` to show the model selector
+
+### Core Engine Block
+- `boxGeometry` scaled by `0.5 + complexity * 0.15` (range: 0.65 → 1.25)
+- Three-layer rendering: solid material (opacity 0.85, metalness 0.6) → wireframe overlay → inner emissive glow
+- Color mapped from `family.id` to a hex color
+- Continuous Y rotation at `0.2 rad/s`
+- HTML label above showing version name + size + params
+
+### Extension Octahedra
+- `octahedronGeometry` — radius 0.25 (unconfigured) or 0.35 (configured)
+- Orbit at radius 3 with slow angular drift (`time * 0.1`) and Y-axis sine bob
+- Color from `extension.color`
+- Emissive intensity: 0 → 0.2 → 0.5 based on state
+- Click handler opens extension config panel
+
+### Cables
+- `<Line>` (drei) from origin to orbit position
+- Dashed pattern (dashSize 0.1, gapSize 0.1), opacity 0.3
+- Static — do not dynamically track moving extensions (computed once via `useMemo`)
+
+### Lighting
+```tsx
+<ambientLight intensity={0.4} />
+<directionalLight position={[10, 10, 5]} intensity={1.2} />
+<pointLight position={[-10, -5, -5]} intensity={0.3} color="#8b5cf6" />
+<pointLight position={[5, -10, 5]} intensity={0.3} color="#06b6d4" />
+```
+
+### Grid
+- `gridHelper` 30×30, colors `#1e293b` / `#0f172a`
 
 ---
 
-*Good luck, Shahd! 🚀*
+## 6. Styling
+
+**File:** `src/index.css` — all styles are CSS (no Tailwind utility classes in components).
+
+### CSS Variables
+
+```css
+--bg-primary: #0f172a        /* Main background */
+--bg-secondary: #1e293b      /* Panels, cards */
+--bg-card: #1e293b
+--bg-hover: #263548          /* Hover state */
+--text-primary: #f8fafc
+--text-secondary: #94a3b8
+--text-muted: #64748b
+--accent-blue: #3b82f6
+--accent-purple: #8b5cf6
+--accent-green: #10b981
+--accent-red: #ef4444
+--accent-yellow: #f59e0b
+--accent-cyan: #06b6d4
+--accent-pink: #ec4899
+--accent-orange: #f97316
+--border: #334155
+--border-light: #475569
+--radius: 8px / --radius-sm: 4px / --radius-lg: 12px
+```
+
+### Layout
+
+- **App shell:** Full viewport, flex column
+- **Header:** `padding: 12px 20px`, gradient title text, toolbar buttons on right
+- **Workspace:** Flex row, `height: calc(100vh - 58px)`
+- **Canvas area:** `flex: 1`
+- **Panel area:** Fixed `width: 340px`, right sidebar with `border-left`
+
+### Key Animations
+
+```css
+@keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes slideUp   { from { transform: translateY(20px); opacity: 0; } }
+```
+
+### Responsive Breakpoints
+
+| Breakpoint | Changes |
+|---|---|
+| `≤ 1024px` | Panel width → 280px, notebook/develop/info right offset → 280px |
+| `≤ 768px` | Header stacks vertically, workspace becomes column (canvas 50vh, panel 40vh), overlays go full-width |
+
+### Scrollbar
+
+Custom WebKit scrollbar: 6px width, `--border` thumb, transparent track.
+
+---
+
+## 7. Data Flow
+
+### Model Selection
+```
+User clicks size in ModelSelector
+  → selectModel({ family, version, size })
+  → store sets selectedModel, generates layers, sets notebookOpen=true, rightPanelTab='model'
+  → Canvas3D re-renders: EmptyState → CoreEngine + ExtensionBlocks + Cables
+  → InfoPanel appears at bottom
+  → NotebookWindow appears at top-right
+```
+
+### Extension Configuration
+```
+User clicks extension octahedron in Canvas3D
+  → selectExtension(kind)
+  → store sets selectedExtensionKind, rightPanelTab='extension'
+  → ModelSelector replaced by ExtensionConfig in panel area
+User clicks an option
+  → updateExtensionOption(kind, optionId)
+  → store updates extension.selectedOptionId, sets notebookOpen=true
+  → ExtensionBlock grows (0.25 → 0.35 radius), emissive increases
+  → NotebookWindow content regenerates
+  → InfoPanel updates configured count
+```
+
+### Code Generation
+```
+exportNotebook('ipynb') iterates all extensions with selectedOptionId
+  → builds JSON notebook with markdown + code cells
+exportNotebook('yaml') builds flat YAML config
+  → called by NotebookWindow useEffect on model/extension/format change
+```
+
+### Layer Editing (Develop Mode)
+```
+User clicks Develop toolbar button
+  → toggleDevelopMode()
+  → DevelopMode overlay appears with layer list
+User toggles freeze / removes / adds layer
+  → store updates layers array
+  → (layers are local state; no code regeneration yet)
+```
+
+### Reset
+```
+User clicks Reset toolbar button
+  → clearModel()
+  → resets: selectedModel, layers, extensions (clear selections), all UI flags
+  → Canvas3D returns to EmptyState
+```
+
+---
+
+## 8. App.tsx Layout
+
+The root component orchestrates everything:
+
+- **Header:** NeuroScope title (gradient) + toolbar buttons (Develop, Notebook, Reset — only shown when model selected)
+- **Workspace:** Flex row containing canvas-area + panel-area + overlays
+- **CanvasErrorBoundary:** Class component wrapping Canvas3D — catches R3F errors, shows fallback with "Try Again" button
+- **Panel area:** Switches between ModelSelector and ExtensionConfig based on `rightPanelTab`
+- **Overlays:** DevelopMode (bottom-right), NotebookWindow (top-right), InfoPanel (bottom) — absolutely positioned, conditionally rendered
+
+---
+
+## 9. Export
+
+Two formats via `store.exportNotebook(format)`:
+
+**`.ipynb`** — Valid Jupyter notebook JSON:
+- Markdown cell with model name, family, params, description
+- Code cell with imports
+- Per configured extension: markdown cell (label, description, when-to-use) + code cell (Python snippet)
+
+**`.yaml`** — Flat config:
+```yaml
+model:
+  family: cnn
+  version: cnn-basic
+  size: medium
+  name: "Basic CNN Medium"
+  params: "~2M"
+extensions:
+  optimizer: adam
+  loss: cross_entropy
+```
